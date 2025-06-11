@@ -100,7 +100,7 @@ function DashboardLayoutNavigationLinks({ children, window }) {
             icon: <DashboardIcon />,
             onClick: () => handleNavClick('Dashboard'),
           },
-           ...(currentUser?.email !== "mr@gmail.com"
+           ...(currentUser?.email !== "info@conceptax.com"
       ? [
            {
             segment: 'LeaveForm',
@@ -116,13 +116,8 @@ function DashboardLayoutNavigationLinks({ children, window }) {
           },]
 
       : []),
-          // {
-          //   segment: 'AdminLeaveQueue',
-          //   title: 'AdminLeaveQueue',
-          //   icon: <DashboardIcon />,
-          //   onClick: () => handleNavClick('AdminLeaveQueue'),
-          // },
-           ...(currentUser?.email === "mr@gmail.com"
+          
+           ...(currentUser?.email === "info@conceptax.com"
       ? [{
           segment: 'AdminLeaveQueue',
           title: 'AdminLeaveQueue',
@@ -135,14 +130,13 @@ function DashboardLayoutNavigationLinks({ children, window }) {
         theme={demoTheme}
         window={demoWindow}
          branding={{
-    title: (
-      <Typography sx={{ color: '#966819', fontWeight: 'bold' }}   onClick={() => navigate('/Dashboard')}>
-        Conceptax Attendance Portal
-      </Typography>
-    ),
-    logo: () => (
-      null
-    ),
+    title: 
+    // (
+      // <Typography sx={{ color: '#966819', fontWeight: 'bold' }}   onClick={() => navigate('/Dashboard')}>
+        "Conceptax Attendance ",
+      // </Typography>
+    // ),
+    logo: <span style={{ display: 'none' }}></span>
   }}
       >
         <DashboardLayout>

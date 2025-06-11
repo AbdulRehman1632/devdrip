@@ -23,7 +23,9 @@ const MyAttendance = () => {
   setLoading(true);
   try {
     const attendanceRef = collection(db, 'allUsers', username, 'attendance');
-    const q = query(attendanceRef, orderBy('timestamp', 'desc'));
+    // const q = query(attendanceRef, orderBy('timestamp', 'desc'));
+            const q = query(attendanceRef, orderBy('date'));
+    
     const snapshot = await getDocs(q);
     const data = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -57,46 +59,46 @@ const MyAttendance = () => {
   return () => unsubscribe();
 }, [auth]);
 
+// const getDayName = (dateString) => {
+//   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+//   const date = new Date(dateString);
+//   return isNaN(date) ? '-' : days[date.getDay()];
+// };
+
+
 const getDayName = (dateString) => {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const date = new Date(dateString);
+  const date = new Date(`${dateString}T00:00:00`);
   return isNaN(date) ? '-' : days[date.getDay()];
 };
 
- 
-// const getDayName = (item) => {
-//   let date = null;
+const getWorkingHours = (date, time, logoutTime) => {
+  if (!time || !logoutTime) return '-';
 
-//   if (item.timestamp && item.timestamp.toDate) {
-//     date = item.timestamp.toDate();
-//   } else if (item.date) {
-//     date = new Date(item.date);
-//   }
+  // Construct proper datetime strings
+  const start = new Date(`${date}T${time}`);
+  const end = new Date(`${date}T${logoutTime}`);
 
-//   if (!date || isNaN(date)) return '-';
+  const diffMs = end - start;
+  if (isNaN(diffMs) || diffMs <= 0) return '-';
 
-//   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-//   return days[date.getDay()];
-// };
+  const totalMinutes = Math.floor(diffMs / 1000 / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
 
-// const formatDate = (item) => {
-//   if (item.timestamp && item.timestamp.toDate) {
-//     return item.timestamp.toDate().toLocaleDateString();
-//   } else if (item.date) {
-//     return new Date(item.date).toLocaleDateString();
-//   } else {
-//     return '-';
-//   }
-// };
-  const getWorkingHours = (date, time, logoutTime) => {
-    if (!time || !logoutTime) return '-';
-    const start = new Date(`${date}T${time}`);
-    const end = new Date(`${date}T${logoutTime}`);
-    const diff = end - start;
-    if (isNaN(diff) || diff <= 0) return '-';
-    const mins = Math.floor(diff / (1000 * 60));
-    return `${Math.floor(mins / 60)}h ${mins % 60}m`;
-  };
+  return `${hours}h ${minutes}m`;
+};
+
+
+  // const getWorkingHours = (date, time, logoutTime) => {
+  //   if (!time || !logoutTime) return '-';
+  //   const start = new Date(`${date}T${time}`);
+  //   const end = new Date(`${date}T${logoutTime}`);
+  //   const diff = end - start;
+  //   if (isNaN(diff) || diff <= 0) return '-';
+  //   const mins = Math.floor(diff / (1000 * 60));
+  //   return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+  // };
 
   const totalWorkingMinutes = attendanceData.reduce((total, item) => {
     if (!item.time || !item.logoutTime) return total;
@@ -112,13 +114,11 @@ const getDayName = (dateString) => {
   
   const paginatedData = attendanceData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-const sortedAttendance = [...attendanceData].sort((a, b) => new Date(a.date) - new Date(b.date));
-
   if (loading) return <p>Loading...</p>;
 
   return (
     <div style={{ maxWidth: 900, margin: 'auto', marginTop: 30, padding: '0 16px', width: '100%' }}>
-  <Typography variant="h5" align="center" gutterBottom>
+  <Typography sx={{ fontSize:"1.8em"}} variant="h5" align="center" gutterBottom>
     My Attendance
   </Typography>
 
@@ -127,35 +127,35 @@ const sortedAttendance = [...attendanceData].sort((a, b) => new Date(a.date) - n
   ) : (
     <>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 20 }}>
-        <Paper sx={{ p: 2, flex: '1 1 150px', textAlign: 'center' }}>
+        <Paper sx={{ p: 2, flex: '1 1 150px', textAlign: 'center',backgroundColor: 'transparent' }}>
           <Typography sx={{fontWeight:"bold",letterSpacing:"0.6px"}} variant="subtitle2">Total Days</Typography>
           <Typography variant="h6">{attendanceData.length}</Typography>
         </Paper>
-        <Paper sx={{ p: 2, flex: '1 1 150px', textAlign: 'center' }}>
+        <Paper sx={{ p: 2, flex: '1 1 150px', textAlign: 'center',backgroundColor: 'transparent',  }}>
           <Typography sx={{fontWeight:"bold",letterSpacing:"0.6px"}} variant="subtitle2">Present</Typography>
           <Typography variant="h6" color="green">
             {attendanceData.filter(i => i.present).length}
           </Typography>
         </Paper>
-        <Paper sx={{ p: 2, flex: '1 1 150px', textAlign: 'center' }}>
+        <Paper sx={{ p: 2, flex: '1 1 150px', textAlign: 'center',backgroundColor: 'transparent',  }}>
           <Typography sx={{fontWeight:"bold",letterSpacing:"0.6px"}} variant="subtitle2">Absent</Typography>
           <Typography variant="h6" color="red">
             {attendanceData.filter(i => !i.present && !i.leave && getDayName(i.date) !== 'Sunday').length}
           </Typography>
         </Paper>
-        <Paper sx={{ p: 2, flex: '1 1 150px', textAlign: 'center' }}>
+        <Paper sx={{ p: 2, flex: '1 1 150px', textAlign: 'center',backgroundColor: 'transparent',  }}>
           <Typography sx={{fontWeight:"bold",letterSpacing:"0.6px"}} variant="subtitle2">Leave</Typography>
           <Typography variant="h6" color="orange">
             {attendanceData.filter(i => i.leave).length}
           </Typography>
         </Paper>
-        <Paper sx={{ p: 2, flex: '1 1 180px', textAlign: 'center',  }}>
+        <Paper sx={{ p: 2, flex: '1 1 180px', textAlign: 'center', backgroundColor: 'transparent',  }}>
           <Typography sx={{fontWeight:"bold",letterSpacing:"0.6px"}} variant="subtitle2">Total Working Hours</Typography>
           <Typography variant="h6">{`${totalHours}h ${totalMinutes}m`}</Typography>
         </Paper>
       </div>
 
-      <TableContainer component={Paper} sx={{ overflowX: 'auto' }}>
+      <TableContainer sx={{ overflowX: 'auto' }}>
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
@@ -174,20 +174,35 @@ const sortedAttendance = [...attendanceData].sort((a, b) => new Date(a.date) - n
                 <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
                 <TableCell>{item.date}</TableCell>
                 <TableCell>{getDayName(item.date)}</TableCell>
-                <TableCell>
-                  {item.time?.toDate
-                    ? item.time.toDate().toLocaleTimeString()
-                    : item.time || '-'}
-                </TableCell>
-                <TableCell>
-                  {item.logoutTime?.toDate
-                    ? item.logoutTime.toDate().toLocaleTimeString()
-                    : item.logoutTime || '-'}
-                </TableCell>
+                 {/* <TableCell>
+  {item.timestamp?.toDate
+    ? item.timestamp.toDate().toLocaleTimeString()
+    : item.timestamp || '-'}
+</TableCell>
+
+<TableCell>
+  {item.logoutTime
+    ? new Date(`${item.date}T${item.logoutTime}`).toLocaleTimeString()
+    : '-'}
+</TableCell> */}
+
+
+            <TableCell>
+  {(item.present && !item.leave && item.timestamp?.toDate)
+    ? item.timestamp.toDate().toLocaleTimeString()
+    : '-'}
+</TableCell>
+
+<TableCell>
+  {(item.present && !item.leave && item.logoutTime)
+    ? new Date(`${item.date}T${item.logoutTime}`).toLocaleTimeString()
+    : '-'}
+</TableCell>
+
                 <TableCell>{getWorkingHours(item.date, item.time, item.logoutTime)}</TableCell>
                 <TableCell sx={{
                   color: getDayName(item.date) === 'Sunday'
-                    ? 'blue'
+                    ? '#3388FF'
                     : item.present
                     ? 'inherit'
                     : item.leave
@@ -207,6 +222,8 @@ const sortedAttendance = [...attendanceData].sort((a, b) => new Date(a.date) - n
             ))}
           </TableBody>
         </Table>
+
+
       </TableContainer>
 
       <Pagination

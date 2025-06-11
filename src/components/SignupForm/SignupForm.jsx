@@ -102,7 +102,7 @@ const SignupForm = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(to bottom, #f8f9fa, #e9ecef)",
+        // background: "linear-gradient(to bottom, #f8f9fa, #e9ecef)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -116,14 +116,15 @@ const SignupForm = () => {
           maxWidth: 450,
           p: isMobile ? 2 : 4,
           borderRadius: 3,
-          backgroundColor: "white",
+         backgroundColor: 'rgba(255, 255, 255, 0)',
+          
         }}
       >
         <Box textAlign="center" mb={2}>
           <img
-            // src="../assets/images/rihla.png"
+            src="../assets/images/Conceptax.png"
             alt="Logo"
-            style={{ width: 80, height: 60 }}
+            style={{ width: "auto", maxWidth: "100%", height: "60px" }}
           />
           <Typography variant="h5" fontWeight="bold" gutterBottom>
             Sign Up

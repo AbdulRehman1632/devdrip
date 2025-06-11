@@ -47,7 +47,7 @@ const AdminLeaveQueue = () => {
       setLeaves(pendingLeaves);
     };
 
-    if (user?.email === 'mr@gmail.com') fetchLeaves();
+    if (user?.email === 'info@conceptax.com' ) fetchLeaves();
   }, [user]);
 
   const approveLeave = async (leave) => {
@@ -107,7 +107,7 @@ const AdminLeaveQueue = () => {
     }
   };
 
-  if (user?.email !== 'mr@gmail.com') return null;
+  if (user?.email !== 'info@conceptax.com') return null;
 
   return (
     <Paper

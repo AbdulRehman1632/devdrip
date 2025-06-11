@@ -43,13 +43,13 @@ const LeaveForm = () => {
   };
 
   return (
-    <Paper sx={{ padding: 3, maxWidth: 500, margin: '2rem auto' }}>
-      <Typography variant="h6" gutterBottom sx={{textAlign:"center", fontSize:"1.7em"}}>Apply for Leave</Typography>
+    <Paper sx={{ padding: 3, maxWidth: 500, margin: '2rem auto' , }}>
+      <Typography variant="h6" gutterBottom sx={{textAlign:"center", fontSize:"1.7em",}}>Apply for Leave</Typography>
       <form onSubmit={handleLeaveSubmit}>
         <TextField type="date" label="From Date" InputLabelProps={{ shrink: true }} fullWidth value={fromDate} onChange={(e) => setFromDate(e.target.value)} sx={{ mb: 2 }} required />
         <TextField type="date" label="To Date" InputLabelProps={{ shrink: true }} fullWidth value={toDate} onChange={(e) => setToDate(e.target.value)} sx={{ mb: 2 }} required />
         <TextField label="Description" fullWidth multiline rows={3} value={description} onChange={(e) => setDescription(e.target.value)} sx={{ mb: 2 }} />
-        <Button type="submit" variant="contained" fullWidth>Submit Leave</Button>
+        <Button sx={{backgroundColor:"#3388FF"}} type="submit" variant="contained" fullWidth>Submit Leave</Button>
       </form>
     </Paper>
   );
