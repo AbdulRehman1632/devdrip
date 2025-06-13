@@ -33,213 +33,6 @@ import { addDoc, collection, doc, getDoc, getDocs, increment, query, serverTimes
 
 
 
-// const handleSubmit = async (e) => {
-//   e.preventDefault();
-//   setLoading(true);
-
-//   try {
-//     const res = await signInWithEmailAndPassword(auth, email, password);
-//     toast.success('Login successful!');
-
-//     const user = res.user;
-//     const username = user.displayName || email.split('@')[0];
-//     const now = new Date();
-//     const todayDate = now.toISOString().slice(0, 10);
-//     const currentTime = now.toLocaleTimeString('en-GB', { hour12: false });
-
-//     // 1. Get user doc
-//     const userDocRef = doc(db, 'allUsers', username);
-//     const userDocSnap = await getDoc(userDocRef);
-
-//     let lastLoginDate;
-// let isFirstLogin = false;
-
-// if (userDocSnap.exists()) {
-//   const data = userDocSnap.data();
-//   if (data.lastLogin?.toDate) {
-//     lastLoginDate = data.lastLogin.toDate();
-//   } else {
-//     isFirstLogin = true;  // 👈 Ye important flag hai
-//   }
-// } else {
-//   isFirstLogin = true; // 👈 User document hi nahi mila
-// }
-
-// // 2. Update login time
-// await setDoc(userDocRef, {
-//   name: username,
-//   lastLogin: serverTimestamp()
-// }, { merge: true });
-
-// const attendanceRef = collection(db, 'allUsers', username, 'attendance');
-
-// // 3. Set attendance based on whether it's first login
-// const startDate = isFirstLogin
-//   ? new Date() // 👈 Pehli dafa login kar raha hai to sirf aaj
-//   : new Date(lastLoginDate);
-
-// startDate.setHours(0, 0, 0, 0);
-
-// const endDate = new Date();
-// endDate.setHours(0, 0, 0, 0);
-
-// for (
-//   let d = new Date(startDate);
-//   d <= endDate;
-//   d.setDate(d.getDate() + 1)
-// ) {
-//   const dateStr = d.toISOString().slice(0, 10);
-
-//   const attendanceQuery = query(attendanceRef, where("date", "==", dateStr));
-//   const attendanceSnap = await getDocs(attendanceQuery);
-
-//   if (!attendanceSnap.empty) continue;
-
-//   const leaveQuery = query(attendanceRef, where("date", "==", dateStr), where("leave", "==", true));
-//   const leaveSnap = await getDocs(leaveQuery);
-
-//   let present = false;
-//   let leave = false;
-//   let time = null;
-
-//   if (!leaveSnap.empty) {
-//     present = null;
-//     leave = true;
-//   } else if (dateStr === todayDate) {
-//     present = true;
-//     time = currentTime;
-//   }
-
-//   await addDoc(attendanceRef, {
-//     date: dateStr,
-//     present,
-//     leave,
-//     time,
-//     timestamp: serverTimestamp(),
-//   });
-
-//   console.log(`✅ Marked: ${dateStr}, present: ${present}, leave: ${leave}`);
-// }
-
-
-// const handleSubmit = async (e) => {
-//   e.preventDefault();
-//   setLoading(true);
-
-//   try {
-//     const res = await signInWithEmailAndPassword(auth, email, password);
-//     toast.success('Login successful!');
-
-//     const user = res.user;
-//     const username = user.displayName || email.split('@')[0];
-//     const now = new Date();
-//     const todayDate = now.toISOString().slice(0, 10);
-//     const currentTime = now.toLocaleTimeString('en-GB', { hour12: false });
-
-//     const userDocRef = doc(db, 'allUsers', username);
-//     const userDocSnap = await getDoc(userDocRef);
-
-//     let lastLoginDate;
-//     let isFirstLogin = false;
-
-//     if (userDocSnap.exists()) {
-//       const data = userDocSnap.data();
-//       if (data.lastLogin?.toDate) {
-//         lastLoginDate = data.lastLogin.toDate();
-//       } else {
-//         isFirstLogin = true;
-//       }
-//     } else {
-//       isFirstLogin = true;
-//     }
-
-//     // Update login time
-//     await setDoc(userDocRef, {
-//       name: username,
-//       lastLogin: serverTimestamp()
-//     }, { merge: true });
-
-//     const attendanceRef = collection(db, 'allUsers', username, 'attendance');
-
-//     // 🚫 Agar first login hai, pechlay dino ko skip karo
-//     if (!isFirstLogin) {
-//       const startDate = new Date(lastLoginDate);
-//       startDate.setHours(0, 0, 0, 0);
-
-//       const endDate = new Date();
-//       endDate.setHours(0, 0, 0, 0);
-
-//       for (
-//         let d = new Date(startDate);
-//         d <= endDate;
-//         d.setDate(d.getDate() + 1)
-//       ) {
-//         const dateStr = d.toISOString().slice(0, 10);
-
-//         const attendanceQuery = query(attendanceRef, where("date", "==", dateStr));
-//         const attendanceSnap = await getDocs(attendanceQuery);
-
-//         if (!attendanceSnap.empty) continue;
-
-//         const leaveQuery = query(attendanceRef, where("date", "==", dateStr), where("leave", "==", true));
-//         const leaveSnap = await getDocs(leaveQuery);
-
-//         let present = false;
-//         let leave = false;
-//         let time = null;
-
-//         if (!leaveSnap.empty) {
-//           present = null;
-//           leave = true;
-//         } else if (dateStr === todayDate) {
-//           present = true;
-//           time = currentTime;
-//         }
-
-//         await addDoc(attendanceRef, {
-//           date: dateStr,
-//           present,
-//           leave,
-//           time,
-//           timestamp: serverTimestamp(),
-//         });
-
-//         console.log(`✅ Marked: ${dateStr}, present: ${present}, leave: ${leave}`);
-//       }
-//     } else {
-//       // Sirf aaj ki attendance mark karo
-//       await addDoc(attendanceRef, {
-//         date: todayDate,
-//         present: true,
-//         leave: false,
-//         time: currentTime,
-//         timestamp: serverTimestamp(),
-//       });
-
-//       console.log(`✅ First login - Marked only today as present: ${todayDate}`);
-//     }
-
-
-//     setTimeout(() => {
-//       navigate('/Dashboard');
-//     }, 2000);
-
-//   } catch (error) {
-//     toast.error('Login failed! Please check your credentials.');
-//     console.error(error);
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
-
-
-
-
-
-
-
-
 const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
@@ -254,111 +47,88 @@ const handleSubmit = async (e) => {
     const todayDate = now.toISOString().slice(0, 10);
     const currentTime = now.toLocaleTimeString('en-GB', { hour12: false });
 
-//     const userDocRef = doc(db, 'allUsers', username);
-//     const userDocSnap = await getDoc(userDocRef);
 
-//     let lastLoginDate;
-//     let isFirstLogin = false;
+// const userDocRef = doc(db, 'allUsers', username);
+// const userDocSnap = await getDoc(userDocRef);
 
-//   if (userDocSnap.exists()) {
+// let lastLoginDate;
+// let lastLoginDateStr = null;
+// let hasLastLogin = false;
+
+// if (userDocSnap.exists()) {
 //   const data = userDocSnap.data();
 //   if (data.lastLogin?.toDate) {
 //     lastLoginDate = data.lastLogin.toDate();
-//     const lastLoginDateStr = lastLoginDate.toISOString().slice(0, 10);
-//     if (lastLoginDateStr !== todayDate) {
-//       isFirstLogin = false; // different day → purana user
-//     } else {
-//       isFirstLogin = true; // same day login already marked
-//     }
-//   } else {
-//     isFirstLogin = true;
+//     lastLoginDateStr = lastLoginDate.toISOString().slice(0, 10);
+//     hasLastLogin = true;
 //   }
-// } else {
-//   isFirstLogin = true;
 // }
-//     // ✅ Update last login timestamp
-//     await setDoc(userDocRef, {
-//       name: username,
-//       lastLogin: serverTimestamp()
-//     }, { merge: true });
 
-//     const attendanceRef = collection(db, 'allUsers', username, 'attendance');
+// // ✅ Update last login timestamp
+// await setDoc(userDocRef, {
+//   name: username,
+//   lastLogin: serverTimestamp()
+// }, { merge: true });
 
-//     // ✅ Sirf aaj ki attendance lagao agar first login hai
-//     if (isFirstLogin) {
-//   const todayAttendanceQuery = query(attendanceRef, where("date", "==", todayDate));
-//   const todaySnap = await getDocs(todayAttendanceQuery);
+// // ✅ Always mark today (if not already)
+// const attendanceRef = collection(db, 'allUsers', username, 'attendance');
+// const todaySnap = await getDocs(query(attendanceRef, where("date", "==", todayDate)));
+// if (todaySnap.empty) {
+//   await addDoc(attendanceRef, {
+//     date: todayDate,
+//     present: true,
+//     leave: false,
+//     time: currentTime,
+//     timestamp: serverTimestamp(),
+//   });
+//   console.log(`✅ Marked today as present: ${todayDate}`);
+// }
 
-//   if (todaySnap.empty) {
-//     await addDoc(attendanceRef, {
-//       date: todayDate,
-//       present: true,
-//       leave: false,
-//       time: currentTime,
-//       timestamp: serverTimestamp(),
-//     });
-//     console.log(`✅ First login - Marked today as present: ${todayDate}`);
-//   } else {
-//     console.log(`⚠️ First login - Attendance for today already exists. Skipping.`);
-//   }
-// } else {
-//       // ✅ Pehle check kro aaj ki attendance lagi hai ya nahi
-//       const todayAttendanceQuery = query(attendanceRef, where("date", "==", todayDate));
-//       const todaySnap = await getDocs(todayAttendanceQuery);
+// // ✅ Kal ki attendance sirf agar:
+// // 1. lastLogin hai, aur
+// // 2. lastLogin ≠ today
+// if (hasLastLogin && lastLoginDateStr !== todayDate) {
+//   const yesterday = new Date();
+//   yesterday.setDate(yesterday.getDate() - 1);
+//   const yesterdayDate = yesterday.toISOString().slice(0, 10);
 
-//       if (todaySnap.empty) {
+//   const ySnap = await getDocs(query(attendanceRef, where("date", "==", yesterdayDate)));
+//   if (ySnap.empty) {
+//     const leaveSnap = await getDocs(
+//       query(attendanceRef, where("date", "==", yesterdayDate), where("leave", "==", true))
+//     );
+
+//     const day = yesterday.getDay(); // 0 = Sunday
+//     if (leaveSnap.empty) {
+//       if (day === 0) {
 //         await addDoc(attendanceRef, {
-//           date: todayDate,
-//           present: true,
+//           date: yesterdayDate,
+//           present: null,
 //           leave: false,
-//           time: currentTime,
+//           holiday: true,
+//           time: null,
 //           timestamp: serverTimestamp(),
 //         });
-//         console.log(`✅ Marked today as present: ${todayDate}`);
-//       }
-
-//       // ✅ Kal ka date check kro
-//       const yesterday = new Date();
-//       yesterday.setDate(yesterday.getDate() - 1);
-//       yesterday.setHours(0, 0, 0, 0);
-//       const yesterdayDate = yesterday.toISOString().slice(0, 10);
-
-//       const ySnap = await getDocs(query(attendanceRef, where("date", "==", yesterdayDate)));
-//       if (ySnap.empty) {
-//         const leaveSnap = await getDocs(
-//           query(attendanceRef, where("date", "==", yesterdayDate), where("leave", "==", true))
-//         );
-
-//         const day = yesterday.getDay(); // 0 = Sunday
-//         if (leaveSnap.empty) {
-//           if (day === 0) {
-//             // ✅ Sunday → holiday mark
-//             await addDoc(attendanceRef, {
-//               date: yesterdayDate,
-//               present: null,
-//               leave: false,
-//               holiday: true,
-//               time: null,
-//               timestamp: serverTimestamp(),
-//             });
-//             console.log(`📅 ${yesterdayDate} was Sunday, marked as holiday.`);
-//           } else {
-//             // ✅ Absent mark
-//             await addDoc(attendanceRef, {
-//               date: yesterdayDate,
-//               present: false,
-//               leave: false,
-//               holiday: false,
-//               time: null,
-//               timestamp: serverTimestamp(),
-//             });
-//             console.log(`❌ ${yesterdayDate} was absent.`);
-//           }
-//         }
+//         console.log(`📅 ${yesterdayDate} was Sunday, marked as holiday.`);
+//       } else {
+//         await addDoc(attendanceRef, {
+//           date: yesterdayDate,
+//           present: false,
+//           leave: false,
+//           holiday: false,
+//           time: null,
+//           timestamp: serverTimestamp(),
+//         });
+//         console.log(`❌ ${yesterdayDate} was absent.`);
 //       }
 //     }
+//   }
+// }
 
 
+//     setTimeout(() => {
+//       navigate('/Dashboard');
+//     }, 2000);
 
 
 const userDocRef = doc(db, 'allUsers', username);
@@ -377,17 +147,22 @@ if (userDocSnap.exists()) {
   }
 }
 
-// ✅ Update last login timestamp
+
 await setDoc(userDocRef, {
   name: username,
   lastLogin: serverTimestamp()
 }, { merge: true });
 
-// ✅ Always mark today (if not already)
+
 const attendanceRef = collection(db, 'allUsers', username, 'attendance');
-const todaySnap = await getDocs(query(attendanceRef, where("date", "==", todayDate)));
-if (todaySnap.empty) {
-  await addDoc(attendanceRef, {
+const today = new Date();
+// const todayDate = today.toISOString().slice(0, 10);
+
+const todayDocRef = doc(db, 'allUsers', username, 'attendance', todayDate);
+const todayDocSnap = await getDoc(todayDocRef);
+
+if (!todayDocSnap.exists()) {
+  await setDoc(todayDocRef, {
     date: todayDate,
     present: true,
     leave: false,
@@ -397,24 +172,29 @@ if (todaySnap.empty) {
   console.log(`✅ Marked today as present: ${todayDate}`);
 }
 
-// ✅ Kal ki attendance sirf agar:
-// 1. lastLogin hai, aur
-// 2. lastLogin ≠ today
+
 if (hasLastLogin && lastLoginDateStr !== todayDate) {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayDate = yesterday.toISOString().slice(0, 10);
 
-  const ySnap = await getDocs(query(attendanceRef, where("date", "==", yesterdayDate)));
-  if (ySnap.empty) {
+  const yesterdayDocRef = doc(db, 'allUsers', username, 'attendance', yesterdayDate);
+  const yesterdayDocSnap = await getDoc(yesterdayDocRef);
+
+  if (!yesterdayDocSnap.exists()) {
+    const day = yesterday.getDay(); 
+
     const leaveSnap = await getDocs(
-      query(attendanceRef, where("date", "==", yesterdayDate), where("leave", "==", true))
+      query(
+        collection(db, 'allUsers', username, 'attendance'),
+        where("date", "==", yesterdayDate),
+        where("leave", "==", true)
+      )
     );
 
-    const day = yesterday.getDay(); // 0 = Sunday
     if (leaveSnap.empty) {
       if (day === 0) {
-        await addDoc(attendanceRef, {
+        await setDoc(yesterdayDocRef, {
           date: yesterdayDate,
           present: null,
           leave: false,
@@ -424,7 +204,7 @@ if (hasLastLogin && lastLoginDateStr !== todayDate) {
         });
         console.log(`📅 ${yesterdayDate} was Sunday, marked as holiday.`);
       } else {
-        await addDoc(attendanceRef, {
+        await setDoc(yesterdayDocRef, {
           date: yesterdayDate,
           present: false,
           leave: false,
@@ -438,10 +218,11 @@ if (hasLastLogin && lastLoginDateStr !== todayDate) {
   }
 }
 
+// ✅ Redirect
+setTimeout(() => {
+  navigate('/Dashboard');
+}, 2000);
 
-    setTimeout(() => {
-      navigate('/Dashboard');
-    }, 2000);
 
   } catch (error) {
     toast.error('Login failed! Please check your credentials.');
@@ -481,7 +262,7 @@ if (hasLastLogin && lastLoginDateStr !== todayDate) {
     width: "90%",
     maxWidth: 400,
     mx: "auto",
-    mt: { xs: 25, sm: 8 },
+    mt: { xs: 15, sm: 8 },
     p: { xs: 2, sm: 3 },
     
     backgroundColor: 'rgba(255, 255, 255, 0)',

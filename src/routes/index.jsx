@@ -6,7 +6,7 @@ import MyAttendance from "../components/MyAttendance/MyAttendance";
 import SignupForm from "../components/SignupForm/SignupForm";
 import UserDetails from "../components/UserDetails/UserDetails";
 import ProtectedRoute from "../utils/constant/ProtectedRoute/ProtectedRoutes";
-// import PublicRoute from "../utils/constant/ProtectedRoute/PublicRoutes";
+
 
 export const routes =[
     {
@@ -25,23 +25,6 @@ export const routes =[
         path:"/Login",
         element:<LoginForm/>,
     },
-    //  {
-    // path: "/SignUp",
-    // element: (
-    //   <PublicRoute>
-    //     <SignupForm />
-    //   </PublicRoute>
-    // ),
-  // },
-  
-  //   {
-  //   path: "/Login",
-  //   element: (
-  //     <PublicRoute>
-  //       <LoginForm />
-  //     </PublicRoute>
-  //   ),
-  // },
   {
     path: "/MyAttendance",
     element: (

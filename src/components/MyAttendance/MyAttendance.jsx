@@ -44,7 +44,7 @@ const MyAttendance = () => {
     if (user) {
     
       if (user.displayName) {
-        fetchAttendance(user.displayName);  // yeh username hai
+        fetchAttendance(user.displayName);  
       } else {
         console.error('User does not have a displayName');
         setAttendanceData([]);
@@ -59,11 +59,6 @@ const MyAttendance = () => {
   return () => unsubscribe();
 }, [auth]);
 
-// const getDayName = (dateString) => {
-//   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-//   const date = new Date(dateString);
-//   return isNaN(date) ? '-' : days[date.getDay()];
-// };
 
 
 const getDayName = (dateString) => {
@@ -89,16 +84,20 @@ const getWorkingHours = (date, time, logoutTime) => {
   return `${hours}h ${minutes}m`;
 };
 
+const getWorkingStatus = (hours) => {
+  if (hours === '-' || hours === undefined || hours === null) {
+    return { label: '-', color: 'inherit' };
+  }
 
-  // const getWorkingHours = (date, time, logoutTime) => {
-  //   if (!time || !logoutTime) return '-';
-  //   const start = new Date(`${date}T${time}`);
-  //   const end = new Date(`${date}T${logoutTime}`);
-  //   const diff = end - start;
-  //   if (isNaN(diff) || diff <= 0) return '-';
-  //   const mins = Math.floor(diff / (1000 * 60));
-  //   return `${Math.floor(mins / 60)}h ${mins % 60}m`;
-  // };
+  const numericHours = typeof hours === 'string' ? parseFloat(hours) : hours;
+
+  if (numericHours >= 7) {
+    return { label: 'Completed', color: 'green' };
+  } else {
+    return { label: 'Early Going', color: 'orange' };
+  }
+};
+
 
   const totalWorkingMinutes = attendanceData.reduce((total, item) => {
     if (!item.time || !item.logoutTime) return total;
@@ -164,7 +163,8 @@ const getWorkingHours = (date, time, logoutTime) => {
               <TableCell sx={{fontSize:"1em",fontWeight:"bold"}}>Day</TableCell>
               <TableCell sx={{fontSize:"1em" , fontWeight:"bold"}}>Login</TableCell>
               <TableCell sx={{fontSize:"1em",fontWeight:"bold"}}>Logout</TableCell>
-              <TableCell sx={{fontSize:"1em",fontWeight:"bold"}}>Per Day Hours</TableCell>
+              <TableCell sx={{fontSize:"1em",fontWeight:"bold"}}>Working Hours</TableCell>
+              <TableCell sx={{fontSize:"1em",fontWeight:"bold"}}>Working Status</TableCell>
               <TableCell sx={{fontSize:"1em",fontWeight:"bold"}}>Present</TableCell>
             </TableRow>
           </TableHead>
@@ -199,7 +199,18 @@ const getWorkingHours = (date, time, logoutTime) => {
     : '-'}
 </TableCell>
 
+
                 <TableCell>{getWorkingHours(item.date, item.time, item.logoutTime)}</TableCell>
+
+                 <TableCell>
+                  {(() => {
+                    const hours = getWorkingHours(item.date, item.time, item.logoutTime);
+                    const { label, color } = getWorkingStatus(hours);
+                
+                    return <span style={{ color, fontWeight: 'bold' }}>{label}</span>;
+                  })()}
+                </TableCell>
+                
                 <TableCell sx={{
                   color: getDayName(item.date) === 'Sunday'
                     ? '#3388FF'
@@ -222,8 +233,6 @@ const getWorkingHours = (date, time, logoutTime) => {
             ))}
           </TableBody>
         </Table>
-
-
       </TableContainer>
 
       <Pagination

@@ -283,7 +283,12 @@ const Dashboard = () => {
         </>
       ) : (
         <>
-          <h2 style={{ fontSize: "2.5em" }}>Hi 👋 {currentUser?.displayName}</h2>
+          <h2 style={{ fontSize: "2.5em" }}>
+  Hi 👋 {currentUser?.displayName
+    ? currentUser.displayName.charAt(0).toUpperCase() + currentUser.displayName.slice(1)
+    : ""}
+</h2>
+
           <h2 style={{ fontSize: "2.5em", color: "green", marginTop: "-15px" }}>You're Present</h2>
         </>
       )}

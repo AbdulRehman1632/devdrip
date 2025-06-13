@@ -7,6 +7,7 @@ import {
   doc,
   setDoc,
   serverTimestamp,
+  getDoc,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../firebase';
@@ -25,6 +26,7 @@ import {
   DialogActions,
   TextField,
   Box,
+  Tooltip,
 } from '@mui/material';
 import { toast } from 'react-toastify';
 
@@ -50,34 +52,58 @@ const AdminLeaveQueue = () => {
     if (user?.email === 'info@conceptax.com' ) fetchLeaves();
   }, [user]);
 
-  const approveLeave = async (leave) => {
-    try {
-      const { fromDate, toDate, userName } = leave;
-      const start = new Date(fromDate);
-      const end = new Date(toDate);
+ const approveLeave = async (leave) => {
+  try {
+    const { fromDate, toDate, userName } = leave;
+    const start = new Date(fromDate);
+    const end = new Date(toDate);
 
-      while (start <= end) {
-        const dateStr = start.toISOString().slice(0, 10);
-        const attendanceRef = doc(db, 'allUsers', userName, 'attendance', dateStr);
+    while (start <= end) {
+      const dateStr = start.toISOString().slice(0, 10);
+      const attendanceRef = doc(db, 'allUsers', userName, 'attendance', dateStr);
+
+      const docSnap = await getDoc(attendanceRef);
+
+      if (docSnap.exists()) {
+        
+        await updateDoc(attendanceRef, {
+          leave: true,
+          present: false, 
+          timestamp: serverTimestamp(),
+        });
+      } else {
+        
         await setDoc(attendanceRef, {
           date: dateStr,
           present: false,
           leave: true,
           timestamp: serverTimestamp(),
         });
-        start.setDate(start.getDate() + 1);
       }
 
-      const leaveRef = doc(db, 'leaves', leave.id);
-      await updateDoc(leaveRef, { status: 'approved', adminMessage: '', notified: false });
-
-      toast.success(`Approved leave for ${leave.userName}`);
-      setLeaves(prev => prev.filter(l => l.id !== leave.id));
-    } catch (err) {
-      toast.error('Failed to approve leave');
-      console.error(err);
+      start.setDate(start.getDate() + 1);
     }
-  };
+
+    
+    const leaveRef = doc(db, 'leaves', leave.id);
+    await updateDoc(leaveRef, {
+      status: 'approved',
+      adminMessage: '',
+      notified: false,
+    });
+
+    toast.success(`Approved leave for ${leave.userName}`);
+    setLeaves(prev => prev.filter(l => l.id !== leave.id));
+
+   
+    fetchAttendance();
+
+  } catch (err) {
+    toast.error('Failed to approve leave');
+    console.error(err);
+  }
+};
+
 
   const handleRejectClick = (leave) => {
     setSelectedLeave(leave);
@@ -151,17 +177,19 @@ const AdminLeaveQueue = () => {
                   <TableCell>{leave.fromDate}</TableCell>
                   <TableCell>{leave.toDate}</TableCell>
                   <TableCell
-                    sx={{
-                      maxWidth: 200,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      fontSize: '0.8em',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    {leave.description}
-                  </TableCell>
+  sx={{
+    maxWidth: 200,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: '0.8em',
+    fontWeight: 'bold',
+  }}
+>
+  <Tooltip title={leave.description} arrow>
+    <span>{leave.description}</span>
+  </Tooltip>
+</TableCell>
                   <TableCell
                     sx={{
                       display: 'flex',
