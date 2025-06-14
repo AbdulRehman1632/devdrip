@@ -233,27 +233,52 @@ const getWorkingStatus = (hours) => {
 };
 
 
-
-
 const handleExport = () => {
   const exportData = filteredData.map((item, index) => {
-    const timeDate = item.time?.toDate?.();         // proper toDate check
-    const logoutDate = item.logoutTime?.toDate?.(); // proper toDate check
-
-    const time = timeDate ? timeDate.toLocaleTimeString() : "-";
-    const logoutTime = logoutDate ? logoutDate.toLocaleTimeString() : "-";
-
-    let workingHours = "-";
-    if (timeDate && logoutDate) {
-      const diffMs = logoutDate - timeDate;
-      const hours = Math.floor(diffMs / (1000 * 60 * 60));
-      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-      workingHours = `${hours}h ${minutes}m`;
+    // ✅ Convert login time
+    let loginDateTime;
+    if (item.time?.toDate) {
+      loginDateTime = item.time.toDate();
+    } else if (item.time) {
+      loginDateTime = new Date(`${item.date}T${item.time}`);
     }
 
-    const name = userId.charAt(0).toUpperCase() + userId.slice(1);
+    // ✅ Convert logout time
+    let logoutDateTime;
+    if (item.logoutTime?.toDate) {
+      logoutDateTime = item.logoutTime.toDate();
+    } else if (item.logoutTime) {
+      logoutDateTime = new Date(`${item.date}T${item.logoutTime}`);
+    }
 
-    // ✅ Leave / Present Logic
+    // ✅ Format readable times
+    const time = loginDateTime ? loginDateTime.toLocaleTimeString() : "-";
+    const logoutTime = logoutDateTime ? logoutDateTime.toLocaleTimeString() : "-";
+
+    // ✅ Calculate working hours
+    let workingHours = "-";
+    let numericHours = null;
+    if (loginDateTime && logoutDateTime) {
+      const diffMs = logoutDateTime - loginDateTime;
+      if (!isNaN(diffMs) && diffMs > 0) {
+        const totalMinutes = Math.floor(diffMs / 1000 / 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        workingHours = `${hours}h ${minutes}m`;
+        numericHours = hours + minutes / 60;
+      }
+    }
+
+    // ✅ Working status logic
+    let workingStatus = "-";
+    if (numericHours !== null && !isNaN(numericHours)) {
+      workingStatus = numericHours >= 7 ? "Completed" : "Early Going";
+    }
+
+    // ✅ Name capitalization
+    const name = userId?.charAt(0).toUpperCase() + userId?.slice(1);
+
+    // ✅ Present status logic
     let presentStatus = "No";
     if (item.leave) {
       presentStatus = "Leave";
@@ -268,6 +293,7 @@ const handleExport = () => {
       ReportingTime: time,
       Logout: logoutTime,
       "Working Hours": workingHours,
+      "Working Status": workingStatus,
       Present: presentStatus,
     };
   });
