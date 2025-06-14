@@ -30,11 +30,14 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  Tooltip
 } from '@mui/material';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { toast } from 'react-toastify';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from 'recharts';
+
 
 const UserDetails = () => {
   const { userId } = useParams();
@@ -350,6 +353,52 @@ const getMonthName = (monthStr) => {
 
 
 
+
+
+
+const filteredMonthData = filteredData.filter((item) => {
+  // Match based on "YYYY-MM" format
+  const itemMonthStr = item.date?.slice(0, 7); // e.g., "2025-06"
+  return itemMonthStr === selectedMonth;
+});
+
+const monthStats = {
+  Present: 0,
+  Absent: 0,
+  Leave: 0,
+  Holiday: 0,
+};
+
+filteredMonthData.forEach((item) => {
+  const dayName = new Date(item.date).toLocaleDateString('en-US', { weekday: 'long' });
+
+  if (dayName === 'Sunday') {
+    monthStats.Holiday++;
+  } else if (item.leave) {
+    monthStats.Leave++;
+  } else if (item.present) {
+    monthStats.Present++;
+  } else {
+    monthStats.Absent++;
+  }
+});
+
+
+
+const pieData = [
+  { name: 'Present', value: monthStats.Present },
+  { name: 'Absent', value: monthStats.Absent },
+  { name: 'Leave', value: monthStats.Leave },
+  { name: 'Holiday', value: monthStats.Holiday }
+];
+
+
+const COLORS = ['#4caf50', '#f44336', '#ff9800', '#2196f3']; 
+// Present, Absent, Leave, Holiday
+
+
+
+
 useEffect(() => {
   const currentDate = new Date();
   const year = currentDate.getFullYear();
@@ -541,6 +590,31 @@ useEffect(() => {
               color="primary"
             />
           </Box>
+
+  <Box sx={{ mt: 4 }}>
+  <ResponsiveContainer width="100%" height={300}>
+    <PieChart>
+      <Pie
+        data={pieData}
+        dataKey="value"
+        nameKey="name"
+        cx="50%"
+        cy="50%"
+        outerRadius={100}
+        fill="#8884d8"
+        label
+      >
+        {pieData.map((entry, index) => (
+          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+        ))}
+      </Pie>
+      {/* <Tooltip /> */}
+      <Legend />
+    </PieChart>
+  </ResponsiveContainer>
+</Box>
+
+
 
           <Dialog
   open={deleteDialogOpen}

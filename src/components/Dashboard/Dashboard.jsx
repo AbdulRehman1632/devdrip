@@ -289,7 +289,7 @@ const Dashboard = () => {
     : ""}
 </h2>
 
-          <h2 style={{ fontSize: "2.5em", color: "green", marginTop: "-15px" }}>You're Present</h2>
+          <h2 style={{ fontSize: "2.5em", color: "green", marginTop: "-15px" }}>You're Present</h2>  
         </>
       )}
     </div>
