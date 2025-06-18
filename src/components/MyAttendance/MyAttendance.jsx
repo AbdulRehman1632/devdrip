@@ -411,7 +411,7 @@ const paginatedLeaveDetails = leaveDetails.slice(
         
         <Paper sx={{ p: 2, flex: '1 1 180px', textAlign: 'center', backgroundColor: 'transparent',  }}>
           <Typography sx={{fontWeight:"bold",letterSpacing:"0.6px"}} variant="subtitle2">Total Working Hours</Typography>
-          <Typography variant="h6">{`${totalHours}h ${totalMinutes}m`}</Typography>
+          <Typography variant="h6" color='aqua'>{`${totalHours}h ${totalMinutes}m`}</Typography>
         </Paper>
       </div>
 
