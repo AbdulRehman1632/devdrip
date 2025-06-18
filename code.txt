@@ -110,7 +110,98 @@
 //   }
 // };
 
-======================================login waste code start end=================================
+======================================login waste code  end=================================
+
+
+
+
+=========================================login Inner start ==========================================
+
+
+// const userDocRef = doc(db, 'allUsers', username);
+// const userDocSnap = await getDoc(userDocRef);
+
+// let lastLoginDate;
+// let lastLoginDateStr = null;
+// let hasLastLogin = false;
+
+// if (userDocSnap.exists()) {
+//   const data = userDocSnap.data();
+//   if (data.lastLogin?.toDate) {
+//     lastLoginDate = data.lastLogin.toDate();
+//     lastLoginDateStr = lastLoginDate.toISOString().slice(0, 10);
+//     hasLastLogin = true;
+//   }
+// }
+
+// // ✅ Update last login timestamp
+// await setDoc(userDocRef, {
+//   name: username,
+//   lastLogin: serverTimestamp()
+// }, { merge: true });
+
+// // ✅ Always mark today (if not already)
+// const attendanceRef = collection(db, 'allUsers', username, 'attendance');
+// const todaySnap = await getDocs(query(attendanceRef, where("date", "==", todayDate)));
+// if (todaySnap.empty) {
+//   await addDoc(attendanceRef, {
+//     date: todayDate,
+//     present: true,
+//     leave: false,
+//     time: currentTime,
+//     timestamp: serverTimestamp(),
+//   });
+//   console.log(`✅ Marked today as present: ${todayDate}`);
+// }
+
+// // ✅ Kal ki attendance sirf agar:
+// // 1. lastLogin hai, aur
+// // 2. lastLogin ≠ today
+// if (hasLastLogin && lastLoginDateStr !== todayDate) {
+//   const yesterday = new Date();
+//   yesterday.setDate(yesterday.getDate() - 1);
+//   const yesterdayDate = yesterday.toISOString().slice(0, 10);
+
+//   const ySnap = await getDocs(query(attendanceRef, where("date", "==", yesterdayDate)));
+//   if (ySnap.empty) {
+//     const leaveSnap = await getDocs(
+//       query(attendanceRef, where("date", "==", yesterdayDate), where("leave", "==", true))
+//     );
+
+//     const day = yesterday.getDay(); // 0 = Sunday
+//     if (leaveSnap.empty) {
+//       if (day === 0) {
+//         await addDoc(attendanceRef, {
+//           date: yesterdayDate,
+//           present: null,
+//           leave: false,
+//           holiday: true,
+//           time: null,
+//           timestamp: serverTimestamp(),
+//         });
+//         console.log(`📅 ${yesterdayDate} was Sunday, marked as holiday.`);
+//       } else {
+//         await addDoc(attendanceRef, {
+//           date: yesterdayDate,
+//           present: false,
+//           leave: false,
+//           holiday: false,
+//           time: null,
+//           timestamp: serverTimestamp(),
+//         });
+//         console.log(`❌ ${yesterdayDate} was absent.`);
+//       }
+//     }
+//   }
+// }
+
+
+//     setTimeout(() => {
+//       navigate('/Dashboard');
+//     }, 2000);
+
+
+=========================================login Inner end ==========================================
 
 
 
@@ -455,3 +546,223 @@
 
 
 =======================================user detail code end=======================================
+
+
+
+
+===========================================Approve leave Queue start=====================================
+
+
+//  const approveLeave = async (leave) => {
+//   try {
+//     const { fromDate, toDate, userName } = leave;
+//     const start = new Date(fromDate);
+//     const end = new Date(toDate);
+
+//     while (start <= end) {
+//       const dateStr = start.toISOString().slice(0, 10);
+//       const attendanceRef = doc(db, 'allUsers', userName, 'attendance', dateStr);
+
+//       const docSnap = await getDoc(attendanceRef);
+
+//       if (docSnap.exists()) {
+        
+//         await updateDoc(attendanceRef, {
+//           leave: true,
+//           present: false, 
+//           timestamp: serverTimestamp(),
+//         });
+//       } else {
+        
+//         await setDoc(attendanceRef, {
+//           date: dateStr,
+//           present: false,
+//           leave: true,
+//           timestamp: serverTimestamp(),
+//         });
+//       }
+
+//       start.setDate(start.getDate() + 1);
+//     }
+
+    
+//     const leaveRef = doc(db, 'leaves', leave.id);
+//     await updateDoc(leaveRef, {
+//       status: 'approved',
+//       adminMessage: '',
+//       notified: false,
+//     });
+
+//     toast.success(`Approved leave for ${leave.userName}`);
+//     setLeaves(prev => prev.filter(l => l.id !== leave.id));
+
+   
+//     fetchAttendance();
+
+//   } catch (err) {
+//     toast.error('Failed to approve leave');
+//     console.error(err);
+//   }
+// };
+
+
+
+===========================================Approve leave Queue end=====================================
+
+
+===========================================Leave form start========================================
+
+
+// import React, { useState } from 'react';
+// import { TextField, Button, Paper, Typography } from '@mui/material';
+// import { addDoc, collection, getFirestore } from 'firebase/firestore';
+// import { getAuth } from 'firebase/auth';
+// import { app } from '../../firebase';
+// import { toast } from 'react-toastify';
+
+// const LeaveForm = () => {
+//   const [fromDate, setFromDate] = useState('');
+//   const [toDate, setToDate] = useState('');
+//   const [description, setDescription] = useState('');
+//   const [loading, setLoading] = useState(false); // ✅ correct position
+
+//   const auth = getAuth(app);
+//   const currentUser = auth.currentUser;
+
+//   const handleLeaveSubmit = async (e) => {
+//     e.preventDefault();
+//     if (loading) return;
+
+//     setLoading(true);
+//     try {
+//       const db = getFirestore(app);
+
+//       const leaveData = {
+//         fromDate,
+//         toDate,
+//         description,
+//         userId: currentUser.uid,
+//         userEmail: currentUser.email,
+//         userName: currentUser.displayName || currentUser.email.split('@')[0],
+//         dateApplied: new Date().toISOString().slice(0, 10),
+//         status: 'pending'
+//       };
+
+//       await addDoc(collection(db, 'leaves'), leaveData);
+//       toast.success('Leave request submitted for approval!');
+      
+//       // Clear form
+//       setFromDate('');
+//       setToDate('');
+//       setDescription('');
+//     } catch (error) {
+//       toast.error('Error applying leave');
+//       console.error(error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <Paper sx={{ padding: 3, maxWidth: 500, margin: '2rem auto' }}>
+//       <Typography variant="h6" gutterBottom sx={{ textAlign: "center", fontSize: "1.7em" }}>
+//         Apply for Leave
+//       </Typography>
+//       <form onSubmit={handleLeaveSubmit}>
+//         <TextField
+//           type="date"
+//           label="From Date"
+//           InputLabelProps={{ shrink: true }}
+//           fullWidth
+//           value={fromDate}
+//           onChange={(e) => setFromDate(e.target.value)}
+//           sx={{ mb: 2 }}
+//           required
+//         />
+//         <TextField
+//           type="date"
+//           label="To Date"
+//           InputLabelProps={{ shrink: true }}
+//           fullWidth
+//           value={toDate}
+//           onChange={(e) => setToDate(e.target.value)}
+//           sx={{ mb: 2 }}
+//           required
+//         />
+//         <TextField
+//           label="Description"
+//           fullWidth
+//           multiline
+//           rows={3}
+//           value={description}
+//           onChange={(e) => setDescription(e.target.value)}
+//           sx={{ mb: 2 }}
+//         />
+//         <Button
+//           sx={{ backgroundColor: "#3388FF" }}
+//           type="submit"
+//           variant="contained"
+//           fullWidth
+//           disabled={loading}
+//         >
+//           Submit Leave
+//         </Button>
+//       </form>
+//     </Paper>
+//   );
+// };
+
+// export default LeaveForm;
+
+
+
+===========================================Leave form end========================================
+
+
+
+=============================================App.jsx start ========================================
+
+
+// import { Route, Routes } from "react-router";
+// import { routes } from "./routes";
+// import DashboardLayoutNavigationLinks from "./Layout/DashboardLayoutNaviagtionLinks";
+// import { ToastContainer } from "react-toastify";
+// import 'react-toastify/dist/ReactToastify.css';
+
+
+
+// const App = () => {
+//   return (
+//     <div>
+//       <Routes>
+//         {routes.map((item, index) => {
+//           const routeElement = item.element;
+//           const needsLayout = ["/Dashboard","/user/:userId","/LeaveForm","/AdminLeaveQueue","/","/MyAttendance"].includes(item.path);
+
+//           return (
+//             <Route
+//               key={index}
+//               path={item.path}
+//               element={
+//                 needsLayout ? (
+//                   <DashboardLayoutNavigationLinks>{routeElement}</DashboardLayoutNavigationLinks>
+//                 ) : (
+//                   routeElement
+//                 )
+//               }
+//             />
+//           );
+//         })}
+//       </Routes>
+
+//       <ToastContainer position="top-right" autoClose={3000} />
+
+//     </div>
+//   );
+// };
+
+// export default App;
+
+
+
+=============================================App.jsx end ========================================

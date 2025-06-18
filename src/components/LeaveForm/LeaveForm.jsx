@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { TextField, Button, Paper, Typography } from '@mui/material';
+import {
+  TextField,
+  Button,
+  Paper,
+  Typography,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select
+} from '@mui/material';
 import { addDoc, collection, getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../firebase';
@@ -9,7 +18,8 @@ const LeaveForm = () => {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [description, setDescription] = useState('');
-  const [loading, setLoading] = useState(false); // ✅ correct position
+  const [leaveType, setLeaveType] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const auth = getAuth(app);
   const currentUser = auth.currentUser;
@@ -17,6 +27,11 @@ const LeaveForm = () => {
   const handleLeaveSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
+
+    if (!leaveType) {
+      toast.error('Please select a leave type');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -26,6 +41,7 @@ const LeaveForm = () => {
         fromDate,
         toDate,
         description,
+        leaveType, // ✅ added field
         userId: currentUser.uid,
         userEmail: currentUser.email,
         userName: currentUser.displayName || currentUser.email.split('@')[0],
@@ -35,11 +51,12 @@ const LeaveForm = () => {
 
       await addDoc(collection(db, 'leaves'), leaveData);
       toast.success('Leave request submitted for approval!');
-      
+
       // Clear form
       setFromDate('');
       setToDate('');
       setDescription('');
+      setLeaveType('');
     } catch (error) {
       toast.error('Error applying leave');
       console.error(error);
@@ -54,6 +71,8 @@ const LeaveForm = () => {
         Apply for Leave
       </Typography>
       <form onSubmit={handleLeaveSubmit}>
+       
+
         <TextField
           type="date"
           label="From Date"
@@ -74,6 +93,22 @@ const LeaveForm = () => {
           sx={{ mb: 2 }}
           required
         />
+
+         <FormControl fullWidth sx={{ mb: 2 }}>
+          <InputLabel>Leave Type</InputLabel>
+          <Select
+            value={leaveType}
+            label="Leave Type"
+            onChange={(e) => setLeaveType(e.target.value)}
+            required
+          >
+            <MenuItem value="Annual Leave">Annual Leave</MenuItem>
+            <MenuItem value="Casual Leave">Casual Leave</MenuItem>
+            <MenuItem value="Sick Leave">Sick Leave</MenuItem>
+          </Select>
+        </FormControl>
+
+
         <TextField
           label="Description"
           fullWidth
@@ -98,3 +133,4 @@ const LeaveForm = () => {
 };
 
 export default LeaveForm;
+

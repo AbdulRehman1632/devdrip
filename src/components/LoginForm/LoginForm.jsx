@@ -31,8 +31,6 @@ import { addDoc, collection, doc, getDoc, getDocs, increment, query, serverTimes
     const auth = getAuth(app);
 
 
-
-
 const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
@@ -46,90 +44,6 @@ const handleSubmit = async (e) => {
     const now = new Date();
     const todayDate = now.toISOString().slice(0, 10);
     const currentTime = now.toLocaleTimeString('en-GB', { hour12: false });
-
-
-// const userDocRef = doc(db, 'allUsers', username);
-// const userDocSnap = await getDoc(userDocRef);
-
-// let lastLoginDate;
-// let lastLoginDateStr = null;
-// let hasLastLogin = false;
-
-// if (userDocSnap.exists()) {
-//   const data = userDocSnap.data();
-//   if (data.lastLogin?.toDate) {
-//     lastLoginDate = data.lastLogin.toDate();
-//     lastLoginDateStr = lastLoginDate.toISOString().slice(0, 10);
-//     hasLastLogin = true;
-//   }
-// }
-
-// // ✅ Update last login timestamp
-// await setDoc(userDocRef, {
-//   name: username,
-//   lastLogin: serverTimestamp()
-// }, { merge: true });
-
-// // ✅ Always mark today (if not already)
-// const attendanceRef = collection(db, 'allUsers', username, 'attendance');
-// const todaySnap = await getDocs(query(attendanceRef, where("date", "==", todayDate)));
-// if (todaySnap.empty) {
-//   await addDoc(attendanceRef, {
-//     date: todayDate,
-//     present: true,
-//     leave: false,
-//     time: currentTime,
-//     timestamp: serverTimestamp(),
-//   });
-//   console.log(`✅ Marked today as present: ${todayDate}`);
-// }
-
-// // ✅ Kal ki attendance sirf agar:
-// // 1. lastLogin hai, aur
-// // 2. lastLogin ≠ today
-// if (hasLastLogin && lastLoginDateStr !== todayDate) {
-//   const yesterday = new Date();
-//   yesterday.setDate(yesterday.getDate() - 1);
-//   const yesterdayDate = yesterday.toISOString().slice(0, 10);
-
-//   const ySnap = await getDocs(query(attendanceRef, where("date", "==", yesterdayDate)));
-//   if (ySnap.empty) {
-//     const leaveSnap = await getDocs(
-//       query(attendanceRef, where("date", "==", yesterdayDate), where("leave", "==", true))
-//     );
-
-//     const day = yesterday.getDay(); // 0 = Sunday
-//     if (leaveSnap.empty) {
-//       if (day === 0) {
-//         await addDoc(attendanceRef, {
-//           date: yesterdayDate,
-//           present: null,
-//           leave: false,
-//           holiday: true,
-//           time: null,
-//           timestamp: serverTimestamp(),
-//         });
-//         console.log(`📅 ${yesterdayDate} was Sunday, marked as holiday.`);
-//       } else {
-//         await addDoc(attendanceRef, {
-//           date: yesterdayDate,
-//           present: false,
-//           leave: false,
-//           holiday: false,
-//           time: null,
-//           timestamp: serverTimestamp(),
-//         });
-//         console.log(`❌ ${yesterdayDate} was absent.`);
-//       }
-//     }
-//   }
-// }
-
-
-//     setTimeout(() => {
-//       navigate('/Dashboard');
-//     }, 2000);
-
 
 const userDocRef = doc(db, 'allUsers', username);
 const userDocSnap = await getDoc(userDocRef);
@@ -231,7 +145,6 @@ setTimeout(() => {
     setLoading(false);
   }
 };
-
 
 
 

@@ -14,6 +14,8 @@ import { AppProvider } from '@toolpad/core/AppProvider';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
+import HolidayVillageIcon from '@mui/icons-material/HolidayVillage';
+import RuleIcon from '@mui/icons-material/Rule';
 
 
 export  const demoTheme = createTheme({
@@ -72,7 +74,7 @@ DemoPageContent.propTypes = {
 
 // DashboardLayoutNavigationLinks.jsx
 function DashboardLayoutNavigationLinks({ children, window }) {
-    const navigate = useNavigate(); // React Router navigation
+    const navigate = useNavigate(); 
   const demoWindow = window !== undefined ? window() : undefined;
   const [currentUser,setCurrentUser]=useState(null)
 
@@ -113,6 +115,18 @@ function DashboardLayoutNavigationLinks({ children, window }) {
             title: 'MyAttendance',
             icon: <ContactEmergencyIcon />,
             onClick: () => handleNavClick('MyAttendance'),
+          },
+        {
+            segment: 'PaidHolidays',
+            title: 'Paid Holidays',
+            icon: <HolidayVillageIcon />,
+            onClick: () => handleNavClick('PaidHolidays'),
+          },
+         {
+            segment: 'RulesAndRegulations',
+            title: 'Rules and Regulations',
+            icon: <RuleIcon />,
+            onClick: () => handleNavClick('RulesAndRegulations'),
           },]
 
       : []),
@@ -123,7 +137,19 @@ function DashboardLayoutNavigationLinks({ children, window }) {
           title: 'AdminLeaveQueue',
           icon: <AdminPanelSettingsIcon />,
           onClick: () => handleNavClick('AdminLeaveQueue'),
-        }]
+        },
+      {
+            segment: 'PaidHolidays',
+            title: 'Paid Holidays',
+            icon: <HolidayVillageIcon />,
+            onClick: () => handleNavClick('PaidHolidays'),
+          },
+         {
+            segment: 'RulesAndRegulations',
+            title: 'Rules and Regulations',
+            icon: <RuleIcon />,
+            onClick: () => handleNavClick('RulesAndRegulations'),
+          },]
       : [])
         ]}
         router={undefined}

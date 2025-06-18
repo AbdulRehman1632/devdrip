@@ -52,7 +52,9 @@ const AdminLeaveQueue = () => {
     if (user?.email === 'info@conceptax.com' ) fetchLeaves();
   }, [user]);
 
- const approveLeave = async (leave) => {
+
+
+const approveLeave = async (leave) => {
   try {
     const { fromDate, toDate, userName } = leave;
     const start = new Date(fromDate);
@@ -65,18 +67,18 @@ const AdminLeaveQueue = () => {
       const docSnap = await getDoc(attendanceRef);
 
       if (docSnap.exists()) {
-        
         await updateDoc(attendanceRef, {
           leave: true,
-          present: false, 
+          leaveType: leave.leaveType || 'unspecified',
+          present: false,
           timestamp: serverTimestamp(),
         });
       } else {
-        
         await setDoc(attendanceRef, {
           date: dateStr,
           present: false,
           leave: true,
+          leaveType: leave.leaveType || 'unspecified',
           timestamp: serverTimestamp(),
         });
       }
@@ -84,7 +86,6 @@ const AdminLeaveQueue = () => {
       start.setDate(start.getDate() + 1);
     }
 
-    
     const leaveRef = doc(db, 'leaves', leave.id);
     await updateDoc(leaveRef, {
       status: 'approved',
@@ -94,13 +95,16 @@ const AdminLeaveQueue = () => {
 
     toast.success(`Approved leave for ${leave.userName}`);
     setLeaves(prev => prev.filter(l => l.id !== leave.id));
-
-   
-    fetchAttendance();
-
   } catch (err) {
     toast.error('Failed to approve leave');
     console.error(err);
+  }
+
+  // fetchAttendance ko separate try-catch me call karo
+  try {
+    fetchAttendance();
+  } catch (error) {
+    console.warn('Attendance fetch failed, but leave approved successfully.');
   }
 };
 
@@ -166,6 +170,7 @@ const AdminLeaveQueue = () => {
                 <TableCell sx={{ fontWeight: 'bold' }}>User</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>From</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>To</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Leave Type</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Action</TableCell>
               </TableRow>
@@ -176,6 +181,7 @@ const AdminLeaveQueue = () => {
                   <TableCell>{leave.userName}</TableCell>
                   <TableCell>{leave.fromDate}</TableCell>
                   <TableCell>{leave.toDate}</TableCell>
+                  <TableCell>{leave.leaveType || '-'}</TableCell>
                   <TableCell
   sx={{
     maxWidth: 200,

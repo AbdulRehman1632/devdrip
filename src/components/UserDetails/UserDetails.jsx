@@ -31,7 +31,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Tooltip
+  Tooltip,
+  Modal,
+  IconButton
 } from '@mui/material';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -53,6 +55,52 @@ const UserDetails = () => {
   const [selectedMonth, setSelectedMonth] = useState(''); 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const rowsPerPage = 8;
+    const [leavePage, setLeavePage] = useState(1);
+  const leaveRowsPerPage = 8;
+  const [leaveByType, setLeaveByType] = useState({ Annual: 0, Casual: 0, Sick: 0 });
+  const [leaveModalOpen, setLeaveModalOpen] = useState(false);
+
+
+
+
+
+
+//  ================================= types of leave start================================
+  
+
+  const leaveLimits = {
+  Annual: 15,
+  Casual: 9,
+  Sick: 8,
+};
+
+const categorizeLeaves = (data) => {
+  const types = { Annual: 0, Casual: 0, Sick: 0 };
+
+  data.forEach((item) => {
+    if (item.leave === true && item.leaveType) {
+      const type = item.leaveType.split(' ')[0]; 
+      if (types[type] !== undefined) {
+        types[type]++;
+      }
+    }
+  });
+
+  return types; // returns used leave counts
+};
+
+  
+    const handleLeaveModalOpen = () => {
+    const categorized = categorizeLeaves(attendanceData);
+    setLeaveByType(categorized);
+    setLeaveModalOpen(true);
+  };
+
+
+  
+const leaveDetails = attendanceData.filter(item => item.leave === true);
+
+//  ================================= types of leave end================================
 
  
   const months = [
@@ -101,6 +149,38 @@ const UserDetails = () => {
     const date = new Date(`${dateString}T00:00:00`);
     return isNaN(date) ? '-' : days[date.getDay()];
   };
+
+
+
+  // =====================================Holiday Start============================================
+
+  
+  const [customHolidayDates, setCustomHolidayDates] = useState([]);
+  
+    useEffect(() => {
+      const fetchHolidays = async () => {
+        try {
+          const snapshot = await getDocs(collection(db, "holidays"));
+          const dates = snapshot.docs.map(doc => doc.data().date); // assuming "date" is string like "2025-06-21"
+          setCustomHolidayDates(dates);
+        } catch (error) {
+          console.error("Error fetching holidays:", error);
+        }
+      };
+  
+      fetchHolidays();
+    }, []);
+  
+  
+    const isCustomHoliday = (dateStr) => {
+    return customHolidayDates.includes(dateStr);
+  };
+  
+
+  // =====================================Holiday end============================================
+
+
+// ======================================Search Data Start===============================================
 
 
   useEffect(() => {
@@ -156,6 +236,10 @@ const UserDetails = () => {
     setFilteredData(filtered);
     setPage(1); 
   }, [searchText, selectedMonth, allData]);
+  
+  // ======================================Search Data end===============================================
+
+  
 
   const handlePageChange = (_, value) => {
     setPage(value);
@@ -173,41 +257,103 @@ const UserDetails = () => {
 
   const leaveCount = filteredData.filter(item => item.leave === true).length;
 
+  // const totalWorkingMinutes = filteredData.reduce((total, item) => {
+  //   if (!item.time || !item.logoutTime) return total;
+
+  //   let start, end;
+  //   if (item.time.toDate && item.logoutTime.toDate) {
+  //     start = item.time.toDate();
+  //     end = item.logoutTime.toDate();
+  //   } else {
+  //     start = new Date(`${item.date}T${item.time}`);
+  //     end = new Date(`${item.date}T${item.logoutTime}`);
+  //   }
+
+  //   const diffMinutes = (end - start) / (1000 * 60);
+  //   return diffMinutes > 0 ? total + diffMinutes : total;
+  // }, 0);
+
+  // const totalHours = Math.floor(totalWorkingMinutes / 60);
+  // const totalMinutes = Math.round(totalWorkingMinutes % 60);
+  // const totalWorkingHoursFormatted = `${totalHours}h ${totalMinutes}m`;
+
+
+// ===========================================Working Hours Start ================================================
+
+
   const totalWorkingMinutes = filteredData.reduce((total, item) => {
-    if (!item.time || !item.logoutTime) return total;
+  if (!item.time || !item.logoutTime) return total;
 
-    let start, end;
-    if (item.time.toDate && item.logoutTime.toDate) {
-      start = item.time.toDate();
-      end = item.logoutTime.toDate();
-    } else {
-      start = new Date(`${item.date}T${item.time}`);
-      end = new Date(`${item.date}T${item.logoutTime}`);
+  let start, end;
+
+  if (item.time.toDate && item.logoutTime.toDate) {
+    start = item.time.toDate();
+    end = item.logoutTime.toDate();
+  } else {
+    start = new Date(`${item.date}T${item.time}`);
+    end = new Date(`${item.date}T${item.logoutTime}`);
+
+    if (end <= start) {
+      end.setDate(end.getDate() + 1);
     }
+  }
 
-    const diffMinutes = (end - start) / (1000 * 60);
-    return diffMinutes > 0 ? total + diffMinutes : total;
-  }, 0);
+  const diffMinutes = (end - start) / (1000 * 60);
+  return diffMinutes > 0 ? total + diffMinutes : total;
+}, 0);
 
-  const totalHours = Math.floor(totalWorkingMinutes / 60);
+const totalHours = Math.floor(totalWorkingMinutes / 60);
   const totalMinutes = Math.round(totalWorkingMinutes % 60);
   const totalWorkingHoursFormatted = `${totalHours}h ${totalMinutes}m`;
 
 
 
+// ===========================================Working Hours End ================================================
 
-  
-  const getWorkingHours = (date, time, logoutTime) => {
+
+    
+  //   const getWorkingHours = (date, time, logoutTime) => {
+  //   let start, end;
+
+  //   if (!time || !logoutTime) return '-';
+
+  //   if (time.toDate && logoutTime.toDate) {
+  //     start = time.toDate();
+  //     end = logoutTime.toDate();
+  //   } else {
+  //     start = new Date(`${date}T${time}`);
+  //     end = new Date(`${date}T${logoutTime}`);
+  //   }
+
+  //   const diffMs = end - start;
+  //   if (isNaN(diffMs) || diffMs <= 0) return '-';
+
+  //   const totalMinutes = Math.floor(diffMs / 1000 / 60);
+  //   const hours = Math.floor(totalMinutes / 60);
+  //   const minutes = totalMinutes % 60;
+
+  //   return `${hours}h ${minutes}m`;
+  // };
+
+// ===========================================getting hours and status Start================================
+
+const getWorkingHours = (date, time, logoutTime) => {
   let start, end;
 
   if (!time || !logoutTime) return '-';
 
-  if (time.toDate && logoutTime.toDate) {
+  if (typeof time === 'object' && time.toDate && typeof logoutTime === 'object' && logoutTime.toDate) {
     start = time.toDate();
     end = logoutTime.toDate();
-  } else {
+  }
+ 
+  else {
     start = new Date(`${date}T${time}`);
     end = new Date(`${date}T${logoutTime}`);
+
+    if (end <= start) {
+      end.setDate(end.getDate() + 1);
+    }
   }
 
   const diffMs = end - start;
@@ -219,7 +365,6 @@ const UserDetails = () => {
 
   return `${hours}h ${minutes}m`;
 };
-
 
 const getWorkingStatus = (hours) => {
   if (hours === '-' || hours === undefined || hours === null) {
@@ -236,9 +381,15 @@ const getWorkingStatus = (hours) => {
 };
 
 
+// ===========================================getting hours and status Start================================
+
+
+
+// ======================================== MS Excel Export start===================================
+
+
 const handleExport = () => {
   const exportData = filteredData.map((item, index) => {
-    // ✅ Convert login time
     let loginDateTime;
     if (item.time?.toDate) {
       loginDateTime = item.time.toDate();
@@ -246,7 +397,6 @@ const handleExport = () => {
       loginDateTime = new Date(`${item.date}T${item.time}`);
     }
 
-    // ✅ Convert logout time
     let logoutDateTime;
     if (item.logoutTime?.toDate) {
       logoutDateTime = item.logoutTime.toDate();
@@ -254,11 +404,9 @@ const handleExport = () => {
       logoutDateTime = new Date(`${item.date}T${item.logoutTime}`);
     }
 
-    // ✅ Format readable times
     const time = loginDateTime ? loginDateTime.toLocaleTimeString() : "-";
     const logoutTime = logoutDateTime ? logoutDateTime.toLocaleTimeString() : "-";
 
-    // ✅ Calculate working hours
     let workingHours = "-";
     let numericHours = null;
     if (loginDateTime && logoutDateTime) {
@@ -272,16 +420,13 @@ const handleExport = () => {
       }
     }
 
-    // ✅ Working status logic
     let workingStatus = "-";
     if (numericHours !== null && !isNaN(numericHours)) {
       workingStatus = numericHours >= 7 ? "Completed" : "Early Going";
     }
 
-    // ✅ Name capitalization
     const name = userId?.charAt(0).toUpperCase() + userId?.slice(1);
 
-    // ✅ Present status logic
     let presentStatus = "No";
     if (item.leave) {
       presentStatus = "Leave";
@@ -310,6 +455,8 @@ const handleExport = () => {
 };
 
 
+
+// ======================================== MS Excel Export end===================================
 
 
 
@@ -342,6 +489,12 @@ const confirmDeleteMonthData = async () => {
 };
 
 
+
+
+// ================================Month name and month data start===========================
+
+
+
 const getMonthName = (monthStr) => {
   if (!monthStr) return '';
   const [year, month] = monthStr.split('-');
@@ -353,12 +506,8 @@ const getMonthName = (monthStr) => {
 
 
 
-
-
-
 const filteredMonthData = filteredData.filter((item) => {
-  // Match based on "YYYY-MM" format
-  const itemMonthStr = item.date?.slice(0, 7); // e.g., "2025-06"
+  const itemMonthStr = item.date?.slice(0, 7); 
   return itemMonthStr === selectedMonth;
 });
 
@@ -398,13 +547,21 @@ const COLORS = ['#4caf50', '#f44336', '#ff9800', '#2196f3'];
 
 
 
-
 useEffect(() => {
   const currentDate = new Date();
   const year = currentDate.getFullYear();
   const month = String(currentDate.getMonth() + 1).padStart(2, '0');
   setSelectedMonth(`${year}-${month}`);
 }, []);
+
+// ================================Month name and month data end===========================
+
+
+
+
+
+
+
 
   if (loading) return <p>Loading attendance...</p>;
 
@@ -481,10 +638,29 @@ useEffect(() => {
               <Typography variant="subtitle1">Absent</Typography>
               <Typography variant="h6" color="error">{absentCount}</Typography>
             </Paper>
-            <Paper elevation={3} sx={{ p: 2, minWidth: 140, textAlign: 'center',backgroundColor: 'transparent',  }}>
+            {/* <Paper elevation={3} sx={{ p: 2, minWidth: 140, textAlign: 'center',backgroundColor: 'transparent',  }}>
               <Typography variant="subtitle1">Leave</Typography>
               <Typography variant="h6" color="warning.main">{leaveCount}</Typography>
-            </Paper>
+            </Paper> */}
+
+            <Paper
+  elevation={3}
+onClick={handleLeaveModalOpen}
+  sx={{
+    p: 2,
+    minWidth: 140,
+    textAlign: 'center',
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
+  }}
+>
+  <Typography variant="subtitle1">Leave</Typography>
+  <Typography variant="h6" color="warning.main">{leaveCount}</Typography>
+</Paper>
+
+
+
+
             <Paper elevation={3} sx={{ p: 2, minWidth: 140, textAlign: 'center',backgroundColor: 'transparent',  }}>
               <Typography variant="subtitle1">Working Hours</Typography>
               <Typography variant="h6" color='aqua'>{totalWorkingHoursFormatted}</Typography>
@@ -554,7 +730,7 @@ useEffect(() => {
 </TableCell>
 
                     
-                                <TableCell
+                                {/* <TableCell
   sx={{
     color:
       getDayName(item.date) === 'Sunday'
@@ -574,6 +750,26 @@ useEffect(() => {
     : item.leave
     ? 'Leave'
     : 'No'}
+</TableCell> */}
+
+  <TableCell sx={{
+  color:
+    getDayName(item.date) === "Sunday" || isCustomHoliday(item.date)
+      ? "#3388FF"
+      : item.present
+      ? "inherit"
+      : item.leave
+      ? "orange"
+      : "red",
+  fontWeight: item.present ? "normal" : "bold",
+}}>
+  {getDayName(item.date) === "Sunday" || isCustomHoliday(item.date)
+    ? "Holiday"
+    : item.present
+    ? "Yes"
+    : item.leave
+    ? "Leave"
+    : "No"}
 </TableCell>
                     
                   </TableRow>
@@ -633,6 +829,102 @@ useEffect(() => {
     </Button>
   </DialogActions>
 </Dialog>
+
+
+
+
+<Dialog
+  open={leaveModalOpen}
+  onClose={() => setLeaveModalOpen(false)}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      p: 2,
+      // background: '#fefefe',
+    },
+  }}
+>
+  <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Typography variant="h6">📋 Leave Summary</Typography>
+    <IconButton onClick={() => setLeaveModalOpen(false)}>
+      {/* <CloseIcon /> */}
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent>
+    {/* Leave Boxes */}
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        gap: 2,
+        flexWrap: 'wrap',
+        mt: 1,
+        mb: 3,
+      }}
+    >
+      {Object.keys(leaveLimits).map((type) => (
+        <Paper
+          key={type}
+          elevation={4}
+          sx={{
+            p: 2,
+            minWidth: 160,
+            textAlign: 'center',
+            borderRadius: 2,
+            // background: '#f5f5f5',
+          }}
+        >
+          <Typography sx={{color:"red",fontWeight:"bold"}} variant="subtitle2" color="text.secondary" mb={1}>
+            {type} Leave
+          </Typography>
+          <Typography variant="h5" color="primary">
+                      <span style={{ color: 'gray' }}>       {leaveByType[type] || 0}</span>  
+             /  { leaveLimits[type]}
+                            </Typography>
+        </Paper>
+      ))}
+    </Box>
+
+    {/* Leave Table */}
+    {leaveDetails.length > 0 ? (
+      <Box sx={{ overflowX: 'auto' }}>
+        <Typography variant="subtitle1" mb={1}>📅 Leave Dates:</Typography>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell><strong>Date</strong></TableCell>
+              <TableCell><strong>Leave Type</strong></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {leaveDetails
+              .slice((leavePage - 1) * leaveRowsPerPage, leavePage * leaveRowsPerPage)
+              .map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.date}</TableCell>
+                  <TableCell>{item.leaveType}</TableCell>
+                </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+    
+        <Pagination
+          count={Math.ceil(leaveDetails.length / leaveRowsPerPage)}
+          page={leavePage}
+          onChange={(_, value) => setLeavePage(value)}
+          sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}
+        />
+      </Box>
+    ) : (
+      <Typography color="text.secondary" align="center">No leave records found.</Typography>
+    )}
+  </DialogContent>
+</Dialog> 
+
+
 
         </>
       )}
