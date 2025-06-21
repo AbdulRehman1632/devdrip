@@ -20,11 +20,14 @@ useEffect(() => {
     if (!user) return;
 
     const logoutTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
+    console.log(logoutTime)
     const date = new Date().toISOString().split("T")[0];
     const docPath = `Attendance/${user.uid}_${date}`;
+    console.log(docPath)
     const projectId = app.options.projectId;
+    console.log(projectId)
     const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${docPath}?updateMask.fieldPaths=logoutTime&currentDocument.exists=true`;
-
+console.log(url)
     const data = {
       fields: {
         logoutTime: { stringValue: logoutTime },
@@ -54,8 +57,8 @@ useEffect(() => {
         {routes.map((item, index) => {
           const routeElement = item.element;
           const needsLayout = [
-            "/Dashboard", "/user/:userId", "/LeaveForm",
-            "/AdminLeaveQueue", "/", "/MyAttendance", "/PaidHolidays","/RulesAndRegulations"
+            "/Dashboard", "/user/:userId", "/LeaveForm", , "/ratings/:userId",
+            "/AdminLeaveQueue", "/", "/MyAttendance", "/PaidHolidays","yourPerformance","/RulesAndRegulations"
           ].includes(item.path);
 
           return (

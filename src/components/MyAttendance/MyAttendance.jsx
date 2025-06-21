@@ -318,7 +318,7 @@ const getWorkingHours = (date, time, logoutTime) => {
   }
 
   const diffMs = end - start;
-  if (isNaN(diffMs) || diffMs <= 0) return '-';
+  if (isNaN(diffMs) ||  diffMs <= 0) return '-';
 
   const totalMinutes = Math.floor(diffMs / 1000 / 60);
   const hours = Math.floor(totalMinutes / 60);
@@ -377,43 +377,97 @@ const paginatedLeaveDetails = leaveDetails.slice(
     <Typography>No attendance data found.</Typography>
   ) : (
     <>
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 20 }}>
-        <Paper sx={{ p: 2, flex: '1 1 150px', textAlign: 'center',backgroundColor: 'transparent' }}>
-          <Typography sx={{fontWeight:"bold",letterSpacing:"0.6px"}} variant="subtitle2">Total Days</Typography>
-          <Typography variant="h6">{filteredMonthData.length}</Typography>
-        </Paper>
-        <Paper sx={{ p: 2, flex: '1 1 150px', textAlign: 'center',backgroundColor: 'transparent',  }}>
-          <Typography sx={{fontWeight:"bold",letterSpacing:"0.6px"}} variant="subtitle2">Present</Typography>
-          <Typography variant="h6" color="green">
-            {filteredMonthData.filter(i => i.present).length}
-          </Typography>
-        </Paper>
-        <Paper sx={{ p: 2, flex: '1 1 150px', textAlign: 'center',backgroundColor: 'transparent',  }}>
-          <Typography sx={{fontWeight:"bold",letterSpacing:"0.6px"}} variant="subtitle2">Absent</Typography>
-          <Typography variant="h6" color="red">
-            {filteredMonthData.filter(i => !i.present && !i.leave && getDayName(i.date) !== 'Sunday').length}
-          </Typography>
-        </Paper>
-           <Paper
-          elevation={3}
-        onClick={handleLeaveModalOpen}
-          sx={{
-            p: 2,
-            minWidth: 140,
-            textAlign: 'center',
-            backgroundColor: 'transparent',
-            cursor: 'pointer',
-          }}
-        >
-          <Typography variant="subtitle1">Leave</Typography>
-          <Typography variant="h6" color="warning.main">{filteredMonthData.filter(i => i.leave).length}</Typography>
-        </Paper>
-        
-        <Paper sx={{ p: 2, flex: '1 1 180px', textAlign: 'center', backgroundColor: 'transparent',  }}>
-          <Typography sx={{fontWeight:"bold",letterSpacing:"0.6px"}} variant="subtitle2">Total Working Hours</Typography>
-          <Typography variant="h6" color='aqua'>{`${totalHours}h ${totalMinutes}m`}</Typography>
-        </Paper>
-      </div>
+     <Box
+  sx={{
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 2,
+    mb: 3,
+    justifyContent: 'center',
+  }}
+>
+  <Paper
+    sx={{
+      p: { xs: 2, sm: 2 },
+      flex: { xs: '1 1 100%', sm: '1 1 150px' },
+      textAlign: 'center',
+      backgroundColor: 'transparent',
+    }}
+  >
+    <Typography sx={{ fontWeight: 'bold', letterSpacing: '0.6px' }} variant="subtitle2">
+      Total Days
+    </Typography>
+    <Typography variant="h6">{filteredMonthData.length}</Typography>
+  </Paper>
+
+  <Paper
+    sx={{
+      p: { xs: 2, sm: 2 },
+      flex: { xs: '1 1 100%', sm: '1 1 150px' },
+      textAlign: 'center',
+      backgroundColor: 'transparent',
+    }}
+  >
+    <Typography sx={{ fontWeight: 'bold', letterSpacing: '0.6px' }} variant="subtitle2">
+      Present
+    </Typography>
+    <Typography variant="h6" color="green">
+      {filteredMonthData.filter(i => i.present).length}
+    </Typography>
+  </Paper>
+
+  <Paper
+    sx={{
+      p: { xs: 2, sm: 2 },
+      flex: { xs: '1 1 100%', sm: '1 1 150px' },
+      textAlign: 'center',
+      backgroundColor: 'transparent',
+    }}
+  >
+    <Typography sx={{ fontWeight: 'bold', letterSpacing: '0.6px' }} variant="subtitle2">
+      Absent
+    </Typography>
+    <Typography variant="h6" color="red">
+      {
+        filteredMonthData.filter(i => !i.present && !i.leave && getDayName(i.date) !== 'Sunday').length
+      }
+    </Typography>
+  </Paper>
+
+  <Paper
+    elevation={3}
+    onClick={handleLeaveModalOpen}
+    sx={{
+      p: { xs: 2, sm: 2 },
+      flex: { xs: '1 1 100%', sm: '1 1 150px' },
+      textAlign: 'center',
+      backgroundColor: 'transparent',
+      cursor: 'pointer',
+    }}
+  >
+    <Typography variant="subtitle1">Leave</Typography>
+    <Typography variant="h6" color="warning.main">
+      {filteredMonthData.filter(i => i.leave).length}
+    </Typography>
+  </Paper>
+
+  <Paper
+    sx={{
+      p: { xs: 2, sm: 2 },
+      flex: { xs: '1 1 100%', sm: '1 1 180px' },
+      textAlign: 'center',
+      backgroundColor: 'transparent',
+    }}
+  >
+    <Typography sx={{ fontWeight: 'bold', letterSpacing: '0.6px' }} variant="subtitle2">
+      Total Working Hours
+    </Typography>
+    <Typography variant="h6" color="aqua">
+      {`${totalHours}h ${totalMinutes}m`}
+    </Typography>
+  </Paper>
+</Box>
+
 
       <TableContainer sx={{ overflowX: 'auto' }}>
         <Table sx={{ minWidth: 650 }}>

@@ -16,6 +16,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
 import HolidayVillageIcon from '@mui/icons-material/HolidayVillage';
 import RuleIcon from '@mui/icons-material/Rule';
+import GradeIcon from '@mui/icons-material/Grade';
 
 
 export  const demoTheme = createTheme({
@@ -27,7 +28,7 @@ export  const demoTheme = createTheme({
       palette: {
         mode: 'light',
         primary: {
-          main: '#966819',
+          main: '#000',
         },
       },
     },
@@ -122,6 +123,12 @@ function DashboardLayoutNavigationLinks({ children, window }) {
             icon: <HolidayVillageIcon />,
             onClick: () => handleNavClick('PaidHolidays'),
           },
+          {
+            segment: 'YourPerformance',
+            title: 'Your Performance',
+            icon: <GradeIcon />,
+            onClick: () => handleNavClick('yourPerformance'),
+          },
          {
             segment: 'RulesAndRegulations',
             title: 'Rules and Regulations',
@@ -159,7 +166,7 @@ function DashboardLayoutNavigationLinks({ children, window }) {
     title: 
     // (
       // <Typography sx={{ color: '#966819', fontWeight: 'bold' }}   onClick={() => navigate('/Dashboard')}>
-        "Conceptax Attendance ",
+        "Conceptax Attendance",
       // </Typography>
     // ),
     logo: <span style={{ display: 'none' }}></span>

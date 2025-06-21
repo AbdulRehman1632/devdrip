@@ -218,6 +218,15 @@ const Dashboard = () => {
   >
     View
   </Button>
+    <Button
+    variant="contained"
+    size="small"
+    sx={{backgroundColor:"#FFDE21"}}
+    onClick={() => navigate(`/ratings/${user.id}`)}
+  >
+    Rate
+  </Button>
+  
   <Button
     variant="contained"
     color="error"

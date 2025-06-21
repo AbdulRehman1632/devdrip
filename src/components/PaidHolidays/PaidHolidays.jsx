@@ -21,7 +21,7 @@ const paidHolidays = [
   { name: 'Easter', date: 'Based on moon sighting' },
   { name: 'Eid al-Fitr', date: '1st Day of Eid' },
   { name: 'Eid al-Adha', date: '1st Day of Eid' },
-  { name: 'Ashura', date: '1st & 10th Muharram' },
+  { name: 'Ashura', date: 'Muharram' },
 ];
 
 const PaidHolidays = () => {

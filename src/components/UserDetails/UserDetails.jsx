@@ -43,6 +43,8 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from 'recharts';
 
 const UserDetails = () => {
   const { userId } = useParams();
+
+  console.log(userId)
   const navigate = useNavigate();
   const db = getFirestore(app);
 
@@ -559,17 +561,13 @@ useEffect(() => {
 
 
 
-
-
-
-
   if (loading) return <p>Loading attendance...</p>;
 
   return (
     <div style={{ marginTop: 20, maxWidth: 900, marginLeft: 'auto', marginRight: 'auto' }}>
       <Typography variant="h6" sx={{ marginBottom: "15px", fontSize: "1.3em", textAlign: 'center' }}>
         Attendance Details of{' '}
-        <Typography component="span" sx={{ color: '#966819', fontWeight: 'bold', fontSize: "1.2em" }}>
+        <Typography component="span" sx={{ color: '#0CAFFF', fontWeight: 'bold', fontSize: "1.2em" }}>
           {userId.charAt(0).toUpperCase() + userId.slice(1)}
         </Typography>
       </Typography>
@@ -582,6 +580,7 @@ useEffect(() => {
   <Button sx={{fontWeight:"bold"}} variant="contained" color="success" onClick={handleExport}>
     Export to Excel
   </Button>
+  
 
   <FormControl sx={{ minWidth: 180 }}>
     <InputLabel id="month-select-label">Filter by Month</InputLabel>
