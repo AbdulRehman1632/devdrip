@@ -17,6 +17,8 @@ import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
 import HolidayVillageIcon from '@mui/icons-material/HolidayVillage';
 import RuleIcon from '@mui/icons-material/Rule';
 import GradeIcon from '@mui/icons-material/Grade';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 
 
 export  const demoTheme = createTheme({
@@ -134,6 +136,12 @@ function DashboardLayoutNavigationLinks({ children, window }) {
             title: 'Rules and Regulations',
             icon: <RuleIcon />,
             onClick: () => handleNavClick('RulesAndRegulations'),
+          },
+        {
+            segment: 'Tickets',
+            title: 'Tickets',
+            icon: <ConfirmationNumberIcon />,
+            onClick: () => handleNavClick('Tickets'),
           },]
 
       : []),
@@ -156,7 +164,13 @@ function DashboardLayoutNavigationLinks({ children, window }) {
             title: 'Rules and Regulations',
             icon: <RuleIcon />,
             onClick: () => handleNavClick('RulesAndRegulations'),
-          },]
+          },
+        {
+            segment: 'HelpDesk',
+            title: 'Help Desk',
+            icon: <ContactSupportIcon />,
+            onClick: () => handleNavClick('HelpDesk'),
+          }]
       : [])
         ]}
         router={undefined}

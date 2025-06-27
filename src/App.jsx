@@ -58,7 +58,7 @@ console.log(url)
           const routeElement = item.element;
           const needsLayout = [
             "/Dashboard", "/user/:userId", "/LeaveForm", , "/ratings/:userId",
-            "/AdminLeaveQueue", "/", "/MyAttendance", "/PaidHolidays","yourPerformance","/RulesAndRegulations"
+            "/AdminLeaveQueue", "/", "/MyAttendance", "/PaidHolidays","yourPerformance","/RulesAndRegulations","/Tickets","/HelpDesk"
           ].includes(item.path);
 
           return (

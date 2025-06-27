@@ -13,6 +13,11 @@ import { addDoc, collection, getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../firebase';
 import { toast } from 'react-toastify';
+import emailjs from 'emailjs-com';
+
+// service service_1
+// template_33pc189
+// lzzNTQp9GVtFjvMPq
 
 const LeaveForm = () => {
   const [fromDate, setFromDate] = useState('');
@@ -23,6 +28,32 @@ const LeaveForm = () => {
 
   const auth = getAuth(app);
   const currentUser = auth.currentUser;
+
+
+  // EmailJS config
+const SERVICE_ID = 'service_1';
+const TEMPLATE_ID = 'template_b3zuol6';
+const USER_ID = '8BECEfP4y79NvwUWR';
+
+const sendEmailToAdmin = async (leaveData) => {
+  const templateParams = {
+     user_name: leaveData.userName,
+  user_email: leaveData.userEmail,
+  from_date: leaveData.fromDate,
+  to_date: leaveData.toDate,
+  leave_type: leaveData.leaveType,
+  description: leaveData.description,
+    to_email: 'fareed.zafar@gmail.com', 
+  };
+
+  try {
+    await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, USER_ID);
+    console.log('Email sent to admin successfully');
+  } catch (err) {
+    console.error('Failed to send email:', err);
+  }
+};
+
 
   const handleLeaveSubmit = async (e) => {
     e.preventDefault();
@@ -50,6 +81,7 @@ const LeaveForm = () => {
       };
 
       await addDoc(collection(db, 'leaves'), leaveData);
+      await sendEmailToAdmin(leaveData);
       toast.success('Leave request submitted for approval!');
 
       // Clear form

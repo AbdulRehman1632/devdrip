@@ -30,10 +30,12 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   getFirestore,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where
 } from 'firebase/firestore';
@@ -108,44 +110,92 @@ const Dashboard = () => {
     return () => unsubscribe();
   }, [auth, db, navigate]);
 
-  const handleLogout = async () => {
-    const user = auth.currentUser;
-    if (!user) return;
+  // const handleLogout = async () => {
+  //   const user = auth.currentUser;
+  //   if (!user) return;
 
-    const username = user.displayName || user.email.split('@')[0];
-    const todayDate = new Date().toISOString().slice(0, 10);
-    const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
+  //   const username = user.displayName || user.email.split('@')[0];
+  //   const todayDate = new Date().toISOString().slice(0, 10);
+  //   const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
 
-    try {
-      const attendanceRef = collection(db, 'allUsers', username, 'attendance');
-      const q = query(attendanceRef, where('date', '==', todayDate));
-      const querySnapshot = await getDocs(q);
+  //   try {
+  //     const attendanceRef = collection(db, 'allUsers', username, 'attendance');
+  //     const q = query(attendanceRef, where('date', '==', todayDate));
+  //     const querySnapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        const docRef = querySnapshot.docs[0].ref;
-        await updateDoc(docRef, {
-          logoutTime: currentTime,
-        });
-      } else {
-        await addDoc(attendanceRef, {
-          date: todayDate,
-          logoutTime: currentTime,
-          present: true,
-          timestamp: serverTimestamp(),
-        });
-      }
+  //     if (!querySnapshot.empty) {
+  //       const docRef = querySnapshot.docs[0].ref;
+  //       await updateDoc(docRef, {
+  //         logoutTime: currentTime,
+  //       });
+  //     } else {
+  //       await addDoc(attendanceRef, {
+  //         date: todayDate,
+  //         logoutTime: currentTime,
+  //         present: true,
+  //         timestamp: serverTimestamp(),
+  //       });
+  //     }
 
-      await signOut(auth);
-      toast.success('Logged out successfully!');
-      setTimeout(() => {
-        window.location.href = '/Login';
-      }, 2000);
+  //     await signOut(auth);
+  //     toast.success('Logged out successfully!');
+  //     setTimeout(() => {
+  //       window.location.href = '/Login';
+  //     }, 2000);
 
-    } catch (error) {
-      toast.error('Logout failed!');
-      console.error(error);
+  //   } catch (error) {
+  //     toast.error('Logout failed!');
+  //     console.error(error);
+  //   }
+  // };
+
+
+
+//   import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+// import { signOut } from "firebase/auth";
+// import { toast } from "react-toastify";
+
+const handleLogout = async () => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const username = user.displayName || user.email.split('@')[0];
+  const todayDate = new Date().toISOString().slice(0, 10);
+  const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
+
+  try {
+    const docRef = doc(db, 'allUsers', username, 'attendance', todayDate);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      // ✅ Overwrite logoutTime on every logout
+      await updateDoc(docRef, {
+        logoutTime: currentTime,
+      });
+    } else {
+      // ✅ Create new doc with logoutTime
+      await setDoc(docRef, {
+        date: todayDate,
+        present: true,
+        time: null,
+        leave: false,
+        logoutTime: currentTime,
+        timestamp: serverTimestamp(),
+      });
     }
-  };
+
+    await signOut(auth);
+    toast.success('Logged out successfully!');
+    setTimeout(() => {
+      window.location.href = '/Login';
+    }, 2000);
+  } catch (error) {
+    toast.error('Logout failed!');
+    console.error(error);
+  }
+};
+
+
 
   const capitalize = (str) => {
   if (!str) return '';
