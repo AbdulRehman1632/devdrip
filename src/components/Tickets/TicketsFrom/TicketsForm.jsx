@@ -17,7 +17,7 @@ import { app } from '../../../firebase';
 import emailjs from 'emailjs-com';
 
 // Initialize EmailJS
-// emailjs.init('8lxn3ln1B71-HlefL'); // Replace this with your public key
+emailjs.init('8lxn3ln1B71-HlefL'); // Replace this with your public key
 
 const TicketsForm = () => {
   const [item, setItem] = useState('');
@@ -115,13 +115,13 @@ const handleSubmit = async (e) => {
     await addDoc(ticketsRef, ticketData);
 
     // 🔸 EmailJS Send
-    // await emailjs.send('service_1', 'template_xre29yj', {
-    //   item,
-    //   urgency,
-    //   description,
-    //   user_email: currentUser.email,
-    //   user_name: currentUser.displayName || currentUser.email.split('@')[0],
-    // });
+    await emailjs.send('service_1', 'template_xre29yj', {
+      item,
+      urgency,
+      description,
+      user_email: currentUser.email,
+      user_name: currentUser.displayName || currentUser.email.split('@')[0],
+    });
 
     toast.success('Ticket submitted & email sent!');
     setItem('');
