@@ -1,4 +1,3 @@
-
 // import { useEffect } from "react";
 // import { Route, Routes } from "react-router";
 // import { routes } from "./routes";
@@ -15,41 +14,42 @@
 
 
 // useEffect(() => {
-//   const auth = getAuth(app);
-//   console.log("Current user on unload: ", auth.currentUser);
-
 //   const handleTabClose = async () => {
 //     const user = auth.currentUser;
 //     if (!user) return;
 
 //     const logoutTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
+//     console.log(logoutTime)
 //     const date = new Date().toISOString().split("T")[0];
-//     const docPath = `Attendance/${user.uid}_${date}`;
+//     const docPath = Attendance/${user.uid}_${date};
+//     console.log(docPath)
 //     const projectId = app.options.projectId;
-
-//     const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${docPath}?updateMask.fieldPaths=logoutTime&currentDocument.exists=true`;
-
+//     console.log(projectId)
+//     const url = https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${docPath}?updateMask.fieldPaths=logoutTime&currentDocument.exists=true;
+// console.log(url)
 //     const data = {
 //       fields: {
-//         logoutTime: { stringValue: logoutTime }
-//       }
+//         logoutTime: { stringValue: logoutTime },
+//       },
 //     };
 
-//     try {
-//       const token = await user.getIdToken(); // get auth token
-//       const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+//     const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
 
-//       navigator.sendBeacon(`${url}&access_token=${token}`, blob);
-//       console.log("Logout time sent:", logoutTime);
-//     } catch (err) {
-//       console.error("SendBeacon error:", err);
-//     }
+//     const token = await user.getIdToken();
+
+//     navigator.sendBeacon(
+//       ${url}&access_token=${token},
+//       blob
+//     );
 //   };
 
-//   // Use `beforeunload` for more reliability
-//   window.addEventListener("beforeunload", handleTabClose);
-//   return () => window.removeEventListener("beforeunload", handleTabClose);
+//   window.addEventListener("unload", handleTabClose);
+
+//   return () => {
+//     window.removeEventListener("unload", handleTabClose);
+//   };
 // }, []);
+
 //   return (
 //     <div>
 //       <Routes>
@@ -84,6 +84,7 @@
 // };
 
 // export default App;
+
 
 
 import { useEffect } from "react";
@@ -126,41 +127,52 @@ const App = () => {
   }, []);
 
   // ✅ On next load: Check localStorage and save logoutTime
-  useEffect(() => {
-    const logoutPayload = JSON.parse(localStorage.getItem('pendingLogoutRecord'));
-    if (!logoutPayload) return;
+ useEffect(() => {
+  const logoutPayload = JSON.parse(localStorage.getItem('pendingLogoutRecord'));
+  if (!logoutPayload) return;
 
-    const { username, todayDate, currentTime } = logoutPayload;
+  const { username, todayDate, currentTime } = logoutPayload;
 
-    const saveLogout = async () => {
-      const docRef = doc(db, 'allUsers', username, 'attendance', todayDate);
-      const docSnap = await getDoc(docRef);
+  const saveLogout = async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const logoutTime = currentTime;
+    const logoutDate = todayDate;
 
-      try {
-        if (docSnap.exists()) {
-          await updateDoc(docRef, {
-            logoutTime: currentTime,
-          });
-        } else {
-          await setDoc(docRef, {
-            date: todayDate,
-            present: true,
-            time: null,
-            leave: false,
-            logoutTime: currentTime,
-            timestamp: serverTimestamp(),
-          });
-        }
+    // ✅ Adjust date if logout was before 4 AM and not on same day
+    const shouldBackdate = (logoutTime < '07:00:00') && (logoutDate !== today);
+    const finalLogoutDate = shouldBackdate
+      ? new Date(new Date(logoutDate).getTime() - 86400000).toISOString().slice(0, 10)
+      : logoutDate;
 
-        localStorage.removeItem('pendingLogoutRecord');
-        console.log('✅ Logout time saved after tab close');
-      } catch (err) {
-        console.error("❌ Error saving logout time:", err);
+    const docRef = doc(db, 'allUsers', username, 'attendance', finalLogoutDate);
+    const docSnap = await getDoc(docRef);
+
+    try {
+      if (docSnap.exists()) {
+        await updateDoc(docRef, {
+          logoutTime: logoutTime,
+        });
+      } else {
+        await setDoc(docRef, {
+          date: finalLogoutDate,
+          present: true,
+          time: null,
+          leave: false,
+          logoutTime: logoutTime,
+          timestamp: serverTimestamp(),
+        });
       }
-    };
 
-    saveLogout();
-  }, []);
+      localStorage.removeItem('pendingLogoutRecord');
+      console.log(`✅ Logout time saved for ${finalLogoutDate} at ${logoutTime}`);
+    } catch (err) {
+      console.error("❌ Error saving logout time:", err);
+    }
+  };
+
+  saveLogout();
+}, []);
+
 
   return (
      <div>
