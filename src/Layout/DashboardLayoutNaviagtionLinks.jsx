@@ -19,6 +19,9 @@ import RuleIcon from '@mui/icons-material/Rule';
 import GradeIcon from '@mui/icons-material/Grade';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
+import { Badge } from '@mui/material';
+import { useTicketContext } from '../utils/constant/TicketContext/TicketContext';
+import { useLeaveContext } from '../utils/constant/LeaveContext/LeaveContext';
 
 
 export  const demoTheme = createTheme({
@@ -95,6 +98,10 @@ function DashboardLayoutNavigationLinks({ children, window }) {
       return () => unsubscribe();
     }, []);
 
+    const { pendingCount } = useTicketContext()
+    const { leaveCount } = useLeaveContext();
+
+
   return (
     <DemoProvider window={demoWindow}>
       <AppProvider
@@ -150,7 +157,9 @@ function DashboardLayoutNavigationLinks({ children, window }) {
       ? [{
           segment: 'AdminLeaveQueue',
           title: 'AdminLeaveQueue',
-          icon: <AdminPanelSettingsIcon />,
+          icon:  <Badge badgeContent={leaveCount > 0 ? leaveCount : null} color="error">
+      <AdminPanelSettingsIcon />
+    </Badge>,
           onClick: () => handleNavClick('AdminLeaveQueue'),
         },
       {
@@ -168,7 +177,9 @@ function DashboardLayoutNavigationLinks({ children, window }) {
         {
             segment: 'HelpDesk',
             title: 'Help Desk',
-            icon: <ContactSupportIcon />,
+            icon:  <Badge badgeContent={pendingCount > 0 ? pendingCount : null} color="error">
+      <ContactSupportIcon />
+    </Badge>,
             onClick: () => handleNavClick('HelpDesk'),
           }]
       : [])

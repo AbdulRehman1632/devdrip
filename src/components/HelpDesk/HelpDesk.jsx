@@ -148,7 +148,7 @@ const HelpDesk = () => {
                         if (t.status === 'approved' && t.approvedTime) return t.approvedTime.toDate().toLocaleString();
                         if (t.status === 'rejected' && t.rejectedTime) return t.rejectedTime.toDate().toLocaleString();
                         if (t.status === 'inprogress' && t.inprogressTime) return t.inprogressTime.toDate().toLocaleString();
-                        return 'No data';
+                        return '-';
                       })()}</TableCell>
                       <TableCell>{ticket.data.description || '-'}</TableCell>
                       {(tab === 2 || tab === 3) && <TableCell>{ticket.data.message || '-'}</TableCell>}

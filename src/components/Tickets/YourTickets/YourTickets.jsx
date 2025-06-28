@@ -48,21 +48,21 @@ const YourTickets = () => {
     fetchTickets();
   }, [user]);
 
-  const handleDelete = async (ticketId) => {
-    if (!user) return;
+  // const handleDelete = async (ticketId) => {
+  //   if (!user) return;
 
-    setDeletingId(ticketId);
-    try {
-      await deleteDoc(doc(db, 'allUsers', user.displayName, 'Tickets', ticketId));
-      setTickets(prev => prev.filter(ticket => ticket.id !== ticketId));
-      toast.success('Ticket deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting ticket:', error);
-      toast.error('Failed to delete ticket.');
-    } finally {
-      setDeletingId(null);
-    }
-  };
+  //   setDeletingId(ticketId);
+  //   try {
+  //     await deleteDoc(doc(db, 'allUsers', user.displayName, 'Tickets', ticketId));
+  //     setTickets(prev => prev.filter(ticket => ticket.id !== ticketId));
+  //     toast.success('Ticket deleted successfully!');
+  //   } catch (error) {
+  //     console.error('Error deleting ticket:', error);
+  //     toast.error('Failed to delete ticket.');
+  //   } finally {
+  //     setDeletingId(null);
+  //   }
+  // };
 
   const paginatedTickets = tickets.slice(
     (page - 1) * ticketsPerPage,
@@ -142,7 +142,7 @@ const YourTickets = () => {
                             </Typography>
                           )}
 
-                          <Box display="flex" justifyContent="flex-end">
+                          {/* <Box display="flex" justifyContent="flex-end">
                             <IconButton
                               sx={{ marginTop: "-20px" }}
                               color="error"
@@ -156,7 +156,7 @@ const YourTickets = () => {
                                 <DeleteIcon />
                               )}
                             </IconButton>
-                          </Box>
+                          </Box> */}
                         </>
                       }
                     />

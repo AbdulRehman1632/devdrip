@@ -15,42 +15,40 @@ const App = () => {
 
 
 useEffect(() => {
+  const auth = getAuth(app);
+
   const handleTabClose = async () => {
     const user = auth.currentUser;
     if (!user) return;
 
     const logoutTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
-    console.log(logoutTime)
     const date = new Date().toISOString().split("T")[0];
     const docPath = `Attendance/${user.uid}_${date}`;
-    console.log(docPath)
     const projectId = app.options.projectId;
-    console.log(projectId)
+
     const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${docPath}?updateMask.fieldPaths=logoutTime&currentDocument.exists=true`;
-console.log(url)
+
     const data = {
       fields: {
-        logoutTime: { stringValue: logoutTime },
-      },
+        logoutTime: { stringValue: logoutTime }
+      }
     };
 
-    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    try {
+      const token = await user.getIdToken(); // get auth token
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
 
-    const token = await user.getIdToken();
-
-    navigator.sendBeacon(
-      `${url}&access_token=${token}`,
-      blob
-    );
+      navigator.sendBeacon(`${url}&access_token=${token}`, blob);
+      console.log("Logout time sent:", logoutTime);
+    } catch (err) {
+      console.error("SendBeacon error:", err);
+    }
   };
 
-  window.addEventListener("unload", handleTabClose);
-
-  return () => {
-    window.removeEventListener("unload", handleTabClose);
-  };
+  // Use `beforeunload` for more reliability
+  window.addEventListener("beforeunload", handleTabClose);
+  return () => window.removeEventListener("beforeunload", handleTabClose);
 }, []);
-
   return (
     <div>
       <Routes>
