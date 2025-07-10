@@ -298,29 +298,73 @@ const totalHours = Math.floor(totalWorkingMinutes / 60);
 const totalMinutes = Math.round(totalWorkingMinutes % 60);
 
 
-const getWorkingHours = (date, time, logoutTime) => {
+// const getWorkingHours = (date, time, logoutTime) => {
+//   let start, end;
+
+//   if (!time || !logoutTime) return '-';
+ 
+//   if (typeof time === 'object' && time.toDate && typeof logoutTime === 'object' && logoutTime.toDate) {
+//     start = time.toDate();
+//     end = logoutTime.toDate();
+//   }
+  
+//   else {
+//     start = new Date(`${date}T${time}`);
+//     end = new Date(`${date}T${logoutTime}`);
+
+//     if (end <= start) {
+//       end.setDate(end.getDate() + 1);
+//     }
+//   }
+
+//   const diffMs = end - start;
+//   if (isNaN(diffMs) ||  diffMs <= 0) return '-';
+
+//   const totalMinutes = Math.floor(diffMs / 1000 / 60);
+//   const hours = Math.floor(totalMinutes / 60);
+//   const minutes = totalMinutes % 60;
+
+//   return `${hours}h ${minutes}m`;
+// };
+
+
+const getWorkingHours = (date, time, logoutTime, timestamp) => {
   let start, end;
 
-  if (!time || !logoutTime) return '-';
- 
-  if (typeof time === 'object' && time.toDate && typeof logoutTime === 'object' && logoutTime.toDate) {
-    start = time.toDate();
-    end = logoutTime.toDate();
-  }
-  
-  else {
+  // 🛑 Step 1: logoutTime must exist
+  if (!logoutTime) return '-';
+
+  // ✅ Step 2: Build end time
+  end = new Date(`${date}T${logoutTime}`);
+
+  // ✅ Step 3: Build start time
+  if (time) {
     start = new Date(`${date}T${time}`);
-    end = new Date(`${date}T${logoutTime}`);
-
-    if (end <= start) {
-      end.setDate(end.getDate() + 1);
-    }
+  } else if (timestamp?.toDate) {
+    start = timestamp.toDate(); // Firebase timestamp is local (UTC+5)
+    
+    // 👇 Extract only time part to match same day
+    const timeStr = start.toTimeString().slice(0, 8); // e.g., "16:48:44"
+    start = new Date(`${date}T${timeStr}`);
+  } else {
+    return '-';
   }
 
-  const diffMs = end - start;
-  if (isNaN(diffMs) ||  diffMs <= 0) return '-';
+  // ✅ Step 4: Handle case where logout is next day
+  if (end < start) {
+    end.setDate(end.getDate() + 1);
+  }
 
-  const totalMinutes = Math.floor(diffMs / 1000 / 60);
+  // ✅ Step 5: Calculate time difference
+  const diffMs = end - start;
+
+  if (isNaN(diffMs) || diffMs <= 0) return '-';
+
+  // ✅ Step 6: Clamp to max 24 hours
+  const max24Hours = 24 * 60 * 60 * 1000;
+  const safeDiff = Math.min(diffMs, max24Hours);
+
+  const totalMinutes = Math.floor(safeDiff / 1000 / 60);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
 
@@ -428,10 +472,15 @@ const paginatedLeaveDetails = leaveDetails.slice(
       Absent
     </Typography>
     <Typography variant="h6" color="red">
-      {
-        filteredMonthData.filter(i => !i.present && !i.leave && getDayName(i.date) !== 'Sunday').length
-      }
-    </Typography>
+    {
+      filteredMonthData.filter(i =>
+        !i.present &&
+        !i.leave &&
+        getDayName(i.date) !== 'Sunday' &&
+        !isCustomHoliday(i.date)
+      ).length
+    }
+  </Typography>
   </Paper>
 
   <Paper
@@ -502,9 +551,15 @@ const paginatedLeaveDetails = leaveDetails.slice(
 </TableCell> */}
 
 
-            <TableCell>
+            {/* <TableCell>
   {(item.present && !item.leave && item.timestamp?.toDate)
     ? item.timestamp.toDate().toLocaleTimeString()
+    : '-'}
+</TableCell> */}
+
+<TableCell>
+  {item.present && !item.leave
+    ? item.time || (item.timestamp?.toDate && item.timestamp.toDate().toLocaleTimeString()) || '-'
     : '-'}
 </TableCell>
 
@@ -515,11 +570,11 @@ const paginatedLeaveDetails = leaveDetails.slice(
 </TableCell>
 
 
-                <TableCell>{getWorkingHours(item.date, item.time, item.logoutTime)}</TableCell>
+                <TableCell>{getWorkingHours(item.date, item.time, item.logoutTime, item.timestamp)}</TableCell>
 
                  <TableCell>
                   {(() => {
-                    const hours = getWorkingHours(item.date, item.time, item.logoutTime);
+                    const hours = getWorkingHours(item.date, item.time, item.logoutTime, item.timestamp);
                     const { label, color } = getWorkingStatus(hours);
                 
                     return <span style={{ color, fontWeight: 'bold' }}>{label}</span>;

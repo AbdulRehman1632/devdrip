@@ -336,6 +336,20 @@ const LoginForm = () => {
 
   const auth = getAuth(app);
 
+    const checkIfHoliday = async (db, dateToCheck) => {
+    const holidayCollection = collection(db, 'holidays');
+    const holidayDocs = await getDocs(holidayCollection);
+
+    for (const docSnap of holidayDocs.docs) {
+      const data = docSnap.data();
+      if (data[dateToCheck]) {
+        return { isHoliday: true, name: docSnap.id }; // e.g. Eid-ul-Adha
+      }
+    }
+
+    return { isHoliday: false };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -393,50 +407,254 @@ const LoginForm = () => {
         console.log(`⚠️ Already marked today (${todayDate}), skipping...`);
       }
 
+
+
+    // =============================  first old code working ===========================
+
+
+      //  if (hasLastLogin && lastLoginDateStr !== todayDate) {
+      //   const yesterday = new Date(now);
+      //   yesterday.setDate(yesterday.getDate() - 1);
+      //   const yesterdayDate = yesterday.toISOString().slice(0, 10);
+      //   const yesterdayDocRef = doc(db, 'allUsers', username, 'attendance', yesterdayDate);
+      //   const yesterdayDocSnap = await getDoc(yesterdayDocRef);
+
+      //   if (!yesterdayDocSnap.exists()) {
+      //     const day = yesterday.getDay();
+
+      //     const leaveSnap = await getDocs(
+      //       query(
+      //         collection(db, 'allUsers', username, 'attendance'),
+      //         where('date', '==', yesterdayDate),
+      //         where('leave', '==', true)
+      //       )
+      //     );
+
+      //     if (leaveSnap.empty) {
+      //       if (day === 0) {
+      //         await setDoc(yesterdayDocRef, {
+      //           date: yesterdayDate,
+      //           present: null,
+      //           leave: false,
+      //           holiday: true,
+      //           time: null,
+      //           timestamp: serverTimestamp(),
+      //         });
+      //         console.log(📅 ${yesterdayDate} was Sunday, marked as holiday.);
+      //       } else {
+      //         await setDoc(yesterdayDocRef, {
+      //           date: yesterdayDate,
+      //           present: false,
+      //           leave: false,
+      //           holiday: false,
+      //           time: null,
+      //           timestamp: serverTimestamp(),
+      //         });
+      //         console.log(❌ ${yesterdayDate} was absent.);
+      //       }
+      //     }
+      //   }
+      // }
+
+
+          // =============================  first old code working ===========================
+
+
+
       // Check for yesterday's absence
-      if (hasLastLogin && lastLoginDateStr !== todayDate) {
-        const yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayDate = yesterday.toISOString().slice(0, 10);
-        const yesterdayDocRef = doc(db, 'allUsers', username, 'attendance', yesterdayDate);
-        const yesterdayDocSnap = await getDoc(yesterdayDocRef);
 
-        if (!yesterdayDocSnap.exists()) {
-          const day = yesterday.getDay();
 
-          const leaveSnap = await getDocs(
-            query(
-              collection(db, 'allUsers', username, 'attendance'),
-              where('date', '==', yesterdayDate),
-              where('leave', '==', true)
-            )
-          );
+// if (hasLastLogin && lastLoginDateStr !== todayDate) {
+//   const yesterday = new Date(now);
+//   yesterday.setDate(yesterday.getDate() - 1);
+//   const yesterdayDate = yesterday.toISOString().slice(0, 10);
+//   const yesterdayDocRef = doc(db, 'allUsers', username, 'attendance', yesterdayDate);
+//   const yesterdayDocSnap = await getDoc(yesterdayDocRef);
 
-          if (leaveSnap.empty) {
-            if (day === 0) {
-              await setDoc(yesterdayDocRef, {
-                date: yesterdayDate,
-                present: null,
-                leave: false,
-                holiday: true,
-                time: null,
-                timestamp: serverTimestamp(),
-              });
-              console.log(`📅 ${yesterdayDate} was Sunday, marked as holiday.`);
-            } else {
-              await setDoc(yesterdayDocRef, {
-                date: yesterdayDate,
-                present: false,
-                leave: false,
-                holiday: false,
-                time: null,
-                timestamp: serverTimestamp(),
-              });
-              console.log(`❌ ${yesterdayDate} was absent.`);
-            }
-          }
+//   if (!yesterdayDocSnap.exists()) {
+//     const day = yesterday.getDay(); // Sunday = 0
+
+//     const leaveSnap = await getDocs(
+//       query(
+//         collection(db, 'allUsers', username, 'attendance'),
+//         where('date', '==', yesterdayDate),
+//         where('leave', '==', true)
+//       )
+//     );
+
+//     const { isHoliday, name: holidayName } = await checkIfHoliday(db, yesterdayDate);
+
+//     if (leaveSnap.empty) {
+//       if (day === 0 || isHoliday) {
+//         await setDoc(yesterdayDocRef, {
+//           date: yesterdayDate,
+//           present: null,
+//           leave: false,
+//           holiday: true,
+//           holidayName: day === 0 ? "Sunday" : holidayName,
+//           time: null,
+//           timestamp: serverTimestamp(),
+//         });
+//         console.log(`📅 ${yesterdayDate} marked as holiday: ${day === 0 ? "Sunday" : holidayName}`);
+//       } else {
+//         await setDoc(yesterdayDocRef, {
+//           date: yesterdayDate,
+//           present: false,
+//           leave: false,
+//           holiday: false,
+//           time: null,
+//           timestamp: serverTimestamp(),
+//         });
+//         console.log(`❌ ${yesterdayDate} was absent.`);
+//       }
+//     }
+//   }
+// }
+
+
+
+
+// ================last working code==================== 
+
+// if (hasLastLogin && lastLoginDateStr !== todayDate) {
+//   const currentDate = new Date(lastLoginDate);
+//   currentDate.setDate(currentDate.getDate() + 1);
+
+//   const endDate = new Date(now);
+
+//   while (currentDate <= endDate) {
+//     const dateStr = currentDate.toISOString().slice(0, 10);
+//     const day = currentDate.getDay();
+
+//     const docRef = doc(db, 'allUsers', username, 'attendance', dateStr);
+//     const docSnap = await getDoc(docRef);
+
+//     if (!docSnap.exists()) {
+//       const leaveSnap = await getDocs(
+//         query(
+//           collection(db, 'allUsers', username, 'attendance'),
+//           where('date', '==', dateStr),
+//           where('leave', '==', true)
+//         )
+//       );
+
+//       const { isHoliday, name: holidayName } = await checkIfHoliday(db, dateStr);
+
+//       if (leaveSnap.empty) {
+//         if (day === 0 || isHoliday) {
+//           await setDoc(docRef, {
+//             date: dateStr,
+//             present: null,
+//             leave: false,
+//             holiday: true,
+//             holidayName: day === 0 ? 'Sunday' : holidayName,
+//             time: null,
+//             timestamp: serverTimestamp(),
+//           });
+//           console.log(`📅 ${dateStr} marked as holiday`);
+//         } else {
+//           await setDoc(docRef, {
+//             date: dateStr,
+//             present: false,
+//             leave: false,
+//             holiday: false,
+//             time: null,
+//             timestamp: serverTimestamp(),
+//           });
+//           console.log(`❌ ${dateStr} marked as absent`);
+//         }
+//       }
+//     }
+
+//     currentDate.setDate(currentDate.getDate() + 1);
+//   }
+// }
+
+
+
+if (hasLastLogin && lastLoginDateStr !== todayDate) {
+  const currentDate = new Date(lastLoginDate);
+  currentDate.setDate(currentDate.getDate() + 1);
+
+  const endDate = new Date(now);
+
+  while (currentDate <= endDate) {
+    const dateStr = currentDate.toISOString().slice(0, 10);
+    const day = currentDate.getDay();
+
+    const docRef = doc(db, 'allUsers', username, 'attendance', dateStr);
+    const docSnap = await getDoc(docRef);
+
+    // if (docSnap.exists()) {
+    //   const data = docSnap.data();
+
+    //   if (data.present === true && !data.logoutTime) {
+    //     await updateDoc(docRef, {
+    //       logoutTime: "-",
+    //     });
+    //     console.log(`⛔ No logout detected for ${dateStr}, set to "-"`);
+    //   }
+
+    // } 
+
+    if (docSnap.exists()) {
+  const data = docSnap.data();
+
+  // ✅ ONLY add logoutTime: "-" if missing
+  if (data.present === true && !("logoutTime" in data)) {
+    await updateDoc(docRef, {
+      logoutTime: "-",
+    });
+    console.log(`⛔ No logout detected for ${dateStr}, set to "-"`);
+  }
+}
+
+    
+    else {
+      // ✅ Absent or Holiday logic — your existing code
+      const leaveSnap = await getDocs(
+        query(
+          collection(db, 'allUsers', username, 'attendance'),
+          where('date', '==', dateStr),
+          where('leave', '==', true)
+        )
+      );
+
+      const { isHoliday, name: holidayName } = await checkIfHoliday(db, dateStr);
+
+      if (leaveSnap.empty) {
+        if (day === 0 || isHoliday) {
+          await setDoc(docRef, {
+            date: dateStr,
+            present: null,
+            leave: false,
+            holiday: true,
+            holidayName: day === 0 ? 'Sunday' : holidayName,
+            time: null,
+            logoutTime: "-",
+            timestamp: serverTimestamp(),
+          });
+          console.log(`📅 ${dateStr} marked as holiday`);
+        } else {
+          await setDoc(docRef, {
+            date: dateStr,
+            present: false,
+            leave: false,
+            holiday: false,
+            time: null,
+            logoutTime: "-",
+            timestamp: serverTimestamp(),
+          });
+          console.log(`❌ ${dateStr} marked as absent`);
         }
       }
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+}
+
+
 
       setTimeout(() => {
         navigate('/Dashboard');

@@ -376,7 +376,7 @@ const Ratings = () => {
                   
                       <Typography
                         variant="body1"
-                        sx={{ color: 'text.primary' ,fontSize:"1.8em",fontFamily:"GreatVibes",letterSpacing:"1.2px", color:'#FFA700',fontWeight:"bold" }} // auto adapts to theme
+                        sx={{fontSize:"1.8em",fontFamily:"GreatVibes",letterSpacing:"1.2px", color:'#FFA700',fontWeight:"bold" }} // auto adapts to theme
                       >
                        <StarBorderIcon/> {fetchedRatings.comment}
                       </Typography>

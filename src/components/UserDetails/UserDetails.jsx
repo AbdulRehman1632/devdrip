@@ -249,15 +249,32 @@ const leaveDetails = attendanceData.filter(item => item.leave === true);
 
   const paginatedData = filteredData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
+  // const totalDays = filteredData.length;
+
+  // const presentCount = filteredData.filter(item => item.present === true).length;
+
+  // const absentCount = filteredData.filter(
+  //   item => !item.present && !item.leave && getDayName(item.date) !== 'Sunday'
+  // ).length;
+
+  // const leaveCount = filteredData.filter(item => item.leave === true).length;
+
+
   const totalDays = filteredData.length;
 
-  const presentCount = filteredData.filter(item => item.present === true).length;
+const presentCount = filteredData.filter(item => item.present === true).length;
 
-  const absentCount = filteredData.filter(
-    item => !item.present && !item.leave && getDayName(item.date) !== 'Sunday'
-  ).length;
+const leaveCount = filteredData.filter(item => item.leave === true).length;
 
-  const leaveCount = filteredData.filter(item => item.leave === true).length;
+const absentCount = filteredData.filter(
+  item =>
+    item.present === false &&
+    item.leave !== true &&
+    getDayName(item.date) !== 'Sunday' &&
+    !isCustomHoliday(item.date)
+).length;
+ 
+
 
   // const totalWorkingMinutes = filteredData.reduce((total, item) => {
   //   if (!item.time || !item.logoutTime) return total;
@@ -337,36 +354,60 @@ const totalHours = Math.floor(totalWorkingMinutes / 60);
   //   return `${hours}h ${minutes}m`;
   // };
 
-// ===========================================getting hours and status Start================================
+// ===========================================pasttt getting hours and status Start================================
 
-const getWorkingHours = (date, time, logoutTime) => {
-  let start, end;
+// const getWorkingHours = (date, time, logoutTime ,timestamp) => {
+//   console.log(timestamp)
+//   let start, end;
 
-  if (!time || !logoutTime) return '-';
+//   if (!time || !logoutTime) return '-';
 
-  if (typeof time === 'object' && time.toDate && typeof logoutTime === 'object' && logoutTime.toDate) {
-    start = time.toDate();
-    end = logoutTime.toDate();
-  }
+//   if (typeof time === 'object' && time.toDate && typeof logoutTime === 'object' && logoutTime.toDate) {
+//     start = time.toDate();
+//     end = logoutTime.toDate();
+//   }
  
-  else {
-    start = new Date(`${date}T${time}`);
-    end = new Date(`${date}T${logoutTime}`);
+//   else {
+//     start = new Date(`${date}T${time}`);
+//     end = new Date(`${date}T${logoutTime}`);
 
-    if (end <= start) {
-      end.setDate(end.getDate() + 1);
-    }
-  }
+//     if (end <= start) {
+//       end.setDate(end.getDate() + 1);
+//     }
+//   }
 
-  const diffMs = end - start;
-  if (isNaN(diffMs) || diffMs <= 0) return '-';
+//   const diffMs = end - start;
+//   if (isNaN(diffMs) || diffMs <= 0) return '-';
 
-  const totalMinutes = Math.floor(diffMs / 1000 / 60);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
+//   const totalMinutes = Math.floor(diffMs / 1000 / 60);
+//   const hours = Math.floor(totalMinutes / 60);
+//   const minutes = totalMinutes % 60;
 
-  return `${hours}h ${minutes}m`;
-};
+//   return `${hours}h ${minutes}m`;
+// };
+
+
+// const getWorkingStatus = (hours) => {
+//   if (hours === '-' || hours === undefined || hours === null) {
+//     return { label: '-', color: 'inherit' };
+//   }
+
+//   // ✅ Extract numeric hours properly from string like "6h 30m"
+//   const match = hours.match(/^(\d+)h\s+(\d+)m$/);
+//   if (!match) return { label: '-', color: 'inherit' };
+
+//   const numericHours = parseInt(match[1]);
+//   const numericMinutes = parseInt(match[2]);
+
+//   const totalHours = numericHours + numericMinutes / 60;
+
+//   if (totalHours >= 7) {
+//     return { label: 'Completed', color: 'green' };
+//   } else {
+//     return { label: 'Early Going', color: 'orange' };
+//   }
+// };
+
 
 const getWorkingStatus = (hours) => {
   if (hours === '-' || hours === undefined || hours === null) {
@@ -380,6 +421,51 @@ const getWorkingStatus = (hours) => {
   } else {
     return { label: 'Early Going', color: 'orange' };
   }
+};
+
+
+
+const getWorkingHours = (date, time, logoutTime, timestamp) => {
+  let start, end;
+
+  // 🛑 Step 1: logoutTime must exist
+  if (!logoutTime) return '-';
+
+  // ✅ Step 2: Build end time
+  end = new Date(`${date}T${logoutTime}`);
+
+  // ✅ Step 3: Build start time
+  if (time) {
+    start = new Date(`${date}T${time}`);
+  } else if (timestamp?.toDate) {
+    start = timestamp.toDate(); // Firebase timestamp is local (UTC+5)
+    
+    // 👇 Extract only time part to match same day
+    const timeStr = start.toTimeString().slice(0, 8); // e.g., "16:48:44"
+    start = new Date(`${date}T${timeStr}`);
+  } else {
+    return '-';
+  }
+
+  // ✅ Step 4: Handle case where logout is next day
+  if (end < start) {
+    end.setDate(end.getDate() + 1);
+  }
+
+  // ✅ Step 5: Calculate time difference
+  const diffMs = end - start;
+
+  if (isNaN(diffMs) || diffMs <= 0) return '-';
+
+  // ✅ Step 6: Clamp to max 24 hours
+  const max24Hours = 24 * 60 * 60 * 1000;
+  const safeDiff = Math.min(diffMs, max24Hours);
+
+  const totalMinutes = Math.floor(safeDiff / 1000 / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${hours}h ${minutes}m`;
 };
 
 
@@ -513,6 +599,28 @@ const filteredMonthData = filteredData.filter((item) => {
   return itemMonthStr === selectedMonth;
 });
 
+// const monthStats = {
+//   Present: 0,
+//   Absent: 0,
+//   Leave: 0,
+//   Holiday: 0,
+// };
+
+// filteredMonthData.forEach((item) => {
+//   const dayName = new Date(item.date).toLocaleDateString('en-US', { weekday: 'long' });
+
+//   if (dayName === 'Sunday') {
+//     monthStats.Holiday++;
+//   } else if (item.leave) {
+//     monthStats.Leave++;
+//   } else if (item.present) {
+//     monthStats.Present++;
+//   } else {
+//     monthStats.Absent++;
+//   }
+// });
+
+
 const monthStats = {
   Present: 0,
   Absent: 0,
@@ -521,9 +629,12 @@ const monthStats = {
 };
 
 filteredMonthData.forEach((item) => {
-  const dayName = new Date(item.date).toLocaleDateString('en-US', { weekday: 'long' });
+  const dateStr = item.date;
+  const dayName = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long' });
 
-  if (dayName === 'Sunday') {
+  const isHoliday = dayName === 'Sunday' || isCustomHoliday(dateStr);
+
+  if (isHoliday) {
     monthStats.Holiday++;
   } else if (item.leave) {
     monthStats.Leave++;
@@ -533,6 +644,7 @@ filteredMonthData.forEach((item) => {
     monthStats.Absent++;
   }
 });
+
 
 
 
@@ -701,12 +813,19 @@ onClick={handleLeaveModalOpen}
     : '-'}
 </TableCell>
             */}
-
+{/* 
             <TableCell>
   {(item.present && !item.leave && item.timestamp?.toDate)
     ? item.timestamp.toDate().toLocaleTimeString()
     : '-'}
+</TableCell> */}
+
+<TableCell>
+  {item.present && !item.leave
+    ? item.time || (item.timestamp?.toDate && item.timestamp.toDate().toLocaleTimeString()) || '-'
+    : '-'}
 </TableCell>
+
 
 <TableCell>
   {(item.present && !item.leave && item.logoutTime)
@@ -716,12 +835,12 @@ onClick={handleLeaveModalOpen}
 
 
                      <TableCell>
-   {getWorkingHours(item.date, item.time, item.logoutTime)}
+   {getWorkingHours(item.date, item.time, item.logoutTime, item.timestamp)}
  </TableCell>
 
  <TableCell>
   {(() => {
-    const hours = getWorkingHours(item.date, item.time, item.logoutTime);
+    const hours = getWorkingHours(item.date, item.time, item.logoutTime, item.timestamp);
     const { label, color } = getWorkingStatus(hours);
 
     return <span style={{ color, fontWeight: 'bold' }}>{label}</span>;
