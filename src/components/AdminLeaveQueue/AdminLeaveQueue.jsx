@@ -31,6 +31,7 @@ import {
 import { toast } from 'react-toastify';
 
 const AdminLeaveQueue = () => {
+    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
   const [leaves, setLeaves] = useState([]);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedLeave, setSelectedLeave] = useState(null);
@@ -49,7 +50,7 @@ const AdminLeaveQueue = () => {
       setLeaves(pendingLeaves);
     };
 
-    if (user?.email === 'info@conceptax.com' ) fetchLeaves();
+    if (user?.email === adminEmail ) fetchLeaves();
   }, [user]);
 
 
@@ -137,7 +138,7 @@ const approveLeave = async (leave) => {
     }
   };
 
-  if (user?.email !== 'info@conceptax.com') return null;
+  if (user?.email !== adminEmail) return null;
 
   return (
     <Paper

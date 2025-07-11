@@ -41,6 +41,8 @@ import {
 } from 'firebase/firestore';
 
 const Dashboard = () => {
+
+  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
   const auth = getAuth(app);
   const navigate = useNavigate();
   const db = getFirestore(app);
@@ -75,7 +77,7 @@ const Dashboard = () => {
         setCurrentUser(user);
         setUserEmail(user.email);
 
-        if (user.email === 'info@conceptax.com') {
+        if (user.email === adminEmail) {
           const allUsersCollectionRef = collection(db, 'allUsers');
           const allUsersSnapshot = await getDocs(allUsersCollectionRef);
           const usersList = allUsersSnapshot.docs.map(doc => ({
@@ -223,7 +225,7 @@ const handleLogout = async () => {
         Logout
       </Button>
 
-      {userEmail === 'info@conceptax.com' ? (
+      {userEmail === adminEmail ? (
         <>
           <h3>All Users:</h3>
 

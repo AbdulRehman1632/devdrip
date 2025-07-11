@@ -59,6 +59,8 @@ export  const demoTheme = createTheme({
 
 
 function DemoPageContent({ pathname }) {
+
+  
   return (
     <Box
       sx={{
@@ -100,7 +102,7 @@ function DashboardLayoutNavigationLinks({ children, window }) {
 
     const { pendingCount } = useTicketContext()
     const { leaveCount } = useLeaveContext();
-
+const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
 
   return (
     <DemoProvider window={demoWindow}>
@@ -112,7 +114,7 @@ function DashboardLayoutNavigationLinks({ children, window }) {
             icon: <DashboardIcon />,
             onClick: () => handleNavClick('Dashboard'),
           },
-           ...(currentUser?.email !== "info@conceptax.com"
+           ...(currentUser?.email !== adminEmail
       ? [
            {
             segment: 'LeaveForm',
@@ -153,7 +155,7 @@ function DashboardLayoutNavigationLinks({ children, window }) {
 
       : []),
           
-           ...(currentUser?.email === "info@conceptax.com"
+           ...(currentUser?.email === adminEmail
       ? [{
           segment: 'AdminLeaveQueue',
           title: 'AdminLeaveQueue',
@@ -191,7 +193,7 @@ function DashboardLayoutNavigationLinks({ children, window }) {
     title: 
     // (
       // <Typography sx={{ color: '#966819', fontWeight: 'bold' }}   onClick={() => navigate('/Dashboard')}>
-        "Conceptax Attendance",
+        "DevDrip Attendance",
       // </Typography>
     // ),
     logo: <span style={{ display: 'none' }}></span>

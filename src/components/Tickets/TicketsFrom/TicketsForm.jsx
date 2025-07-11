@@ -16,8 +16,13 @@ import { toast } from 'react-toastify';
 import { app } from '../../../firebase';
 import emailjs from 'emailjs-com';
 
+
+const SERVICE_Id = import.meta.env.VITE_SERVICE_ID;
+const TEMPLATE_Id = import.meta.env.VITE_TICKET_TEMPLATE_ID;
+const USER_Id = import.meta.env.VITE_USER_ID;
+
 // Initialize EmailJS
-emailjs.init('8lxn3ln1B71-HlefL'); // Replace this with your public key
+emailjs.init(USER_Id); // Replace this with your public key
 
 const TicketsForm = () => {
   const [item, setItem] = useState('');
@@ -115,7 +120,7 @@ const handleSubmit = async (e) => {
     await addDoc(ticketsRef, ticketData);
 
     // 🔸 EmailJS Send
-    await emailjs.send('service_1', 'template_xre29yj', {
+    await emailjs.send(SERVICE_Id, TEMPLATE_Id, {
       item,
       urgency,
       description,

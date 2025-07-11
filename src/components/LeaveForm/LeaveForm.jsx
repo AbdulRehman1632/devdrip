@@ -15,9 +15,6 @@ import { app } from '../../firebase';
 import { toast } from 'react-toastify';
 import emailjs from 'emailjs-com';
 
-// service service_1
-// template_33pc189
-// lzzNTQp9GVtFjvMPq
 
 const LeaveForm = () => {
   const [fromDate, setFromDate] = useState('');
@@ -25,15 +22,16 @@ const LeaveForm = () => {
   const [description, setDescription] = useState('');
   const [leaveType, setLeaveType] = useState('');
   const [loading, setLoading] = useState(false);
+  const EmailSender = import.meta.env.VITE_ADMIN_SENDER;
 
   const auth = getAuth(app);
   const currentUser = auth.currentUser;
 
 
   // EmailJS config
-const SERVICE_ID = 'service_1';
-const TEMPLATE_ID = 'template_b3zuol6';
-const USER_ID = '8BECEfP4y79NvwUWR';
+const SERVICE_Id = import.meta.env.VITE_SERVICE_ID;
+const TEMPLATE_Id = import.meta.env.VITE_TEMPLATE_ID;
+const USER_Id = import.meta.env.VITE_USER_ID;
 
 const sendEmailToAdmin = async (leaveData) => {
   const templateParams = {
@@ -43,11 +41,12 @@ const sendEmailToAdmin = async (leaveData) => {
   to_date: leaveData.toDate,
   leave_type: leaveData.leaveType,
   description: leaveData.description,
-    to_email: 'fareed.zafar@gmail.com', 
+    to_email: EmailSender, 
   };
 
   try {
-    await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, USER_ID);
+    await emailjs.send(SERVICE_Id, TEMPLATE_Id, templateParams, USER_Id);
+    console.log(templateParams) 
     console.log('Email sent to admin successfully');
   } catch (err) {
     console.error('Failed to send email:', err);
