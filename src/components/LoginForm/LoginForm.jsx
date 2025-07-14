@@ -400,6 +400,7 @@ const LoginForm = () => {
           present: true,
           leave: false,
           time: currentTime,
+          logoutTime: "-",
           timestamp: serverTimestamp(),
         });
         console.log(`✅ Marked today as present: ${todayDate}`);

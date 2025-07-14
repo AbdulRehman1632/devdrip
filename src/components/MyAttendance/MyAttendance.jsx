@@ -564,10 +564,11 @@ const paginatedLeaveDetails = leaveDetails.slice(
 </TableCell>
 
 <TableCell>
-  {(item.present && !item.leave && item.logoutTime)
-    ? new Date(`${item.date}T${item.logoutTime}`).toLocaleTimeString()
+  {(item.present && !item.leave && item.logoutTime && item.logoutTime !== '-')
+    ? new Date(`${item.date}T${item.logoutTime}`).toLocaleTimeString('en-GB', { hour12: false })
     : '-'}
 </TableCell>
+
 
 
                 <TableCell>{getWorkingHours(item.date, item.time, item.logoutTime, item.timestamp)}</TableCell>

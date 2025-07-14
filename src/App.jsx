@@ -92,15 +92,21 @@ import { routes } from "./routes";
 import DashboardLayoutNavigationLinks from "./Layout/DashboardLayoutNaviagtionLinks";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-
-import { getAuth, signOut } from "firebase/auth";
-// import { app } from "./firebase";
-import { doc, setDoc, getFirestore, getDoc, updateDoc } from "firebase/firestore";
+import { getAuth, signOut, setPersistence, browserSessionPersistence } from "firebase/auth";
 import { app } from "./firebase";
 
 const App = () => {
   const auth = getAuth(app);
-  const db = getFirestore(app);
+
+
+
+  setPersistence(auth, browserSessionPersistence)
+  .then(() => {
+    console.log("✅ Auto-logout on tab close is active");
+  })
+  .catch((error) => {
+    console.error("❌ Persistence setup failed:", error);
+  });
 
 
 
@@ -198,37 +204,37 @@ const App = () => {
 
 
 
-useEffect(() => {
-  const handleTabClose = async () => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (!user) return;
+// useEffect(() => {
+//   const handleTabClose = async () => {
+//     const auth = getAuth();
+//     const user = auth.currentUser;
+//     if (!user) return;
 
-    const username = user.displayName || user.email.split('@')[0];
-    const todayDate = new Date().toISOString().slice(0, 10);
-    const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
+//     const username = user.displayName || user.email.split('@')[0];
+//     const todayDate = new Date().toISOString().slice(0, 10);
+//     const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
 
-    // Just store this for backup (optional)
-    const logoutPayload = {
-      username,
-      todayDate,
-      currentTime,
-    };
-    localStorage.setItem('pendingLogoutRecord', JSON.stringify(logoutPayload));
+//     // Just store this for backup (optional)
+//     const logoutPayload = {
+//       username,
+//       todayDate,
+//       currentTime,
+//     };
+//     localStorage.setItem('pendingLogoutRecord', JSON.stringify(logoutPayload));
 
-    // ✅ Sign out user
-    try {
-      await signOut(auth);
-      console.log("✅ User auto-signed out on tab close or shutdown.");
-    } catch (error) {
-      console.error("❌ Error during signout on tab close:", error);
-    }
-  };
+//     // ✅ Sign out user
+//     try {
+//       await signOut(auth);
+//       console.log("✅ User auto-signed out on tab close or shutdown.");
+//     } catch (error) {
+//       console.error("❌ Error during signout on tab close:", error);
+//     }
+//   };
 
-  // `unload` is better than `beforeunload` for silent tasks
-  window.addEventListener("unload", handleTabClose);
-  return () => window.removeEventListener("unload", handleTabClose);
-}, []);
+//   // `unload` is better than `beforeunload` for silent tasks
+//   window.addEventListener("unload", handleTabClose);
+//   return () => window.removeEventListener("unload", handleTabClose);
+// }, []);
 
 
 

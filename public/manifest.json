@@ -1,7 +1,7 @@
 {
-    "name": "Conceptax Attendance Portal",
-    "short_name": "Conceptax",
-    "description": "A Progressive Web App (PWA) designed to manage, track, and record employee attendance efficiently for Conceptax with real-time access and offline support.",
+    "name": "DevDrip Attendance Portal",
+    "short_name": "DevDrip",
+    "description": "A Progressive Web App (PWA) designed to manage, track, and record employee attendance efficiently for DevDrip with real-time access and offline support.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
